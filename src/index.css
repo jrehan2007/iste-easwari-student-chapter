@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  @apply bg-white text-ink dark:bg-night dark:text-slate-100;
+}
+
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-sm px-5 py-2.5 text-base transition; }
+  .btn-primary { @apply btn bg-turkish text-white hover:bg-turkish-dark; }
+  .btn-outline { @apply btn border border-turkish text-turkish-dark hover:bg-turkish-mist dark:text-turkish-light dark:hover:bg-turkish/10; }
+  .btn-ghost   { @apply btn border border-white/40 text-white hover:border-turkish hover:text-turkish-light; }
+
+  .card  { @apply rounded-sm border border-turkish/25 bg-white p-5 dark:border-night-line dark:bg-night-soft; }
+  .field { @apply w-full rounded-sm border border-ink/20 bg-white px-3 py-2 outline-none transition focus:border-turkish dark:border-night-line dark:bg-night dark:text-slate-100; }
+  .label { @apply mb-1 block text-sm text-ink/70 dark:text-slate-400; }
+
+  .section-title { @apply font-display text-3xl font-semibold tracking-tight text-ink dark:text-slate-50 sm:text-4xl; }
+  .panel-title   { @apply font-display text-2xl font-semibold tracking-tight; }
+  .rule  { @apply h-px w-full bg-turkish/30; }
+  .muted { @apply text-ink/70 dark:text-slate-400; }
+
+  /* Admin and member dashboards get the display face throughout. */
+  .dash { font-family: Fraunces, "Cormorant Garamond", "Times New Roman", serif; }
+  .dash-nav { @apply flex shrink-0 items-center gap-2 rounded-sm px-4 py-2.5 text-left transition; }
+}
+
+*:focus-visible { outline: 2px solid #00A9CE; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
