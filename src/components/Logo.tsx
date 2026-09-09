@@ -23,7 +23,7 @@ export function IsteMark({
       <motion.div
         aria-hidden
         className="pointer-events-none absolute -inset-[12%] rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(0,169,206,.45) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(201,162,39,.42) 0%, rgba(0,169,206,.18) 45%, transparent 72%)' }}
         animate={{ opacity: [0.25, 0.7, 0.25], scale: [0.95, 1.06, 0.95] }}
         transition={{ duration: 10, delay, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -68,7 +68,7 @@ export function IsteMark({
 /** The college wordmark is dark maroon artwork, so it gets a white plate on dark backgrounds. */
 export function EaswariMark({ className = 'h-11', plate = false }: { className?: string; plate?: boolean }) {
   return (
-    <span className={`inline-flex items-center rounded-sm ${plate ? 'bg-white px-2 py-1' : 'dark:bg-white dark:px-2 dark:py-1'}`}>
+    <span className={`inline-flex items-center rounded-sm ${plate ? 'bg-white px-2 py-1' : 'bg-white px-2 py-1'}`}>
       <img src="/easwari-logo.webp" alt="Easwari Engineering College" className={`${className} w-auto`} />
     </span>
   )
