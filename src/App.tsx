@@ -19,11 +19,13 @@ export default function App() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
   const bare = pathname.startsWith('/member')
+  const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
+  const showWatermark = watermarkRoutes.includes(pathname)
 
   return (
     <div className="flex min-h-screen flex-col">
       {!bare && <Header />}
-      <main className="flex-1">
+      <main className={`flex-1 ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/professional" element={<Professional />} />
