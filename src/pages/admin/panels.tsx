@@ -16,11 +16,11 @@ export function useSaver() {
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const run = async (fn: () => Promise<unknown>, okText: string, after?: () => void) => {
+  const run = async <T,>(fn: () => Promise<T>, okText: string | ((result: T) => string), after?: () => void) => {
     setBusy(true)
     try {
-      await fn()
-      setMsg({ kind: 'ok', text: okText })
+      const result = await fn()
+      setMsg({ kind: 'ok', text: typeof okText === 'function' ? okText(result) : okText })
       after?.()
     } catch (e) {
       setMsg({ kind: 'err', text: (e as Error).message })

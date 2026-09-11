@@ -152,6 +152,28 @@ export async function listPasses(eventId: string) {
   return (data ?? []) as EventPass[]
 }
 
+export async function emailPasses(eventId: string): Promise<{ sent: number; failed: string[] }> {
+  guard()
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  if (!token) throw new Error('You must be signed in to email passes.')
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-passes`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ event_id: eventId }),
+    },
+  )
+  const result = await response.json()
+  if (!response.ok) throw new Error(result?.error ?? `Failed to email passes (${response.status})`)
+  return result as { sent: number; failed: string[] }
+}
+
 export async function deletePass(id: string) {
   guard()
   const { error } = await supabase.from('event_passes').delete().eq('id', id)

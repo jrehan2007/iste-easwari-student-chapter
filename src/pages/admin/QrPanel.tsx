@@ -59,7 +59,7 @@ function PassCard({ pass, eventTitle, venue, when }: {
 
 export default function QrPanel() {
   const events = useAsync(() => api.listEvents(), [])
-  const { run, banner } = useSaver()
+  const { run, banner, busy } = useSaver()
 
   const [eventId, setEventId] = useState('')
   const [emails, setEmails] = useState('')
@@ -142,10 +142,23 @@ export default function QrPanel() {
             <h3 className="font-display text-lg font-semibold">
               Issued passes — {passes.data!.filter((p) => p.checked_in_at).length} of {passes.data!.length} checked in
             </h3>
-            <button className="btn-outline py-1.5 text-sm" onClick={() => exportCsv(passes.data!, event?.title ?? 'event')}>
-              Export attendance
-            </button>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button className="btn-outline py-1.5 text-sm" onClick={() => exportCsv(passes.data!, event?.title ?? 'event')}>
+                Export attendance
+              </button>
+              <button className="btn-primary py-1.5 text-sm" disabled={!eventId || busy}
+                onClick={() => run(
+                  () => api.emailPasses(eventId),
+                  ({ sent, failed }) => `Sent ${sent} passes${failed.length ? `. Failed: ${failed.join('; ')}` : ''}`,
+                  passes.reload,
+                )}>
+                {busy ? 'Sending…' : 'Email passes to leaders'}
+              </button>
+            </div>
           </div>
+          <p className="muted -mt-3 text-sm">
+            {passes.data!.filter((p) => p.emailed_at).length} of {passes.data!.length} emailed
+          </p>
           <Table head={['Team', 'Leader', 'Lane', 'Room', 'Checked in', '']}>
             {passes.data!.map((p) => (
               <Row key={p.id}>
