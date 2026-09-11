@@ -73,7 +73,7 @@ export default function IntroHero() {
               onEnded={finish}
               onError={finish}
               onClick={finish}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
 
             <div className="absolute bottom-6 right-6 flex gap-2">
