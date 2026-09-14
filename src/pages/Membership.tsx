@@ -46,12 +46,12 @@ export default function Membership() {
           )}
         </div>
 
-        <aside className="h-fit border-2 border-gold bg-ink p-7 text-white">
+        <aside className="h-fit border-2 border-gold bg-[#E8F1F4] p-7 text-ink dark:bg-ink dark:text-white">
           {open ? (
             <>
               <p className="tracking-widest text-gold-light">MEMBERSHIP</p>
               <p className="font-display mt-2 text-5xl font-semibold">{s?.price_label}</p>
-              {s?.price_note && <p className="mt-2 text-white/70">{s.price_note}</p>}
+              {s?.price_note && <p className="mt-2 text-ink/70 dark:text-white/70">{s.price_note}</p>}
               {s?.closes_on && (
                 <p className="mt-3 text-sm text-gold-light">
                   Applications close {new Date(s.closes_on).toLocaleDateString('en-IN', {
@@ -64,11 +64,11 @@ export default function Membership() {
                   Apply for membership
                 </a>
               ) : (
-                <p className="mt-6 text-sm text-white/60">
+                <p className="mt-6 text-sm text-ink/60 dark:text-white/60">
                   The application form hasn't been linked yet. Check back shortly.
                 </p>
               )}
-              <p className="mt-4 text-xs text-white/50">
+              <p className="mt-4 text-xs text-ink/60 dark:text-white/50">
                 Once your application is approved, the chapter secretary hands you your sign-in
                 details and your digital ID card becomes available.
               </p>
@@ -77,7 +77,7 @@ export default function Membership() {
             <>
               <Lock className="text-gold-light" size={28} />
               <p className="font-display mt-4 text-2xl font-semibold">Registration closed</p>
-              <p className="mt-3 leading-relaxed text-white/75">{s?.closed_message}</p>
+              <p className="mt-3 leading-relaxed text-ink/75 dark:text-white/75">{s?.closed_message}</p>
               {s?.opens_on && (
                 <p className="mt-4 text-sm text-gold-light">
                   Next intake opens {new Date(s.opens_on).toLocaleDateString('en-IN', {

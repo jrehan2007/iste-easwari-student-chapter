@@ -37,7 +37,7 @@ export default function Home() {
           )}
       </section>
 
-      <section className="bg-turkish-mist py-16 dark:bg-night-soft">
+      <section className="bg-[#E8F1F4] py-16 dark:bg-night-soft">
         <div className="container-page">
           <h2 className="section-title">Next on the calendar</h2>
           <div className="rule mt-4" />

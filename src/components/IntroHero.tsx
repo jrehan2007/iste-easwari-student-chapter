@@ -54,7 +54,7 @@ export default function IntroHero() {
   }, [playing])
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#050B1A]">
+    <section className="hero-shell relative isolate overflow-hidden">
       <AnimatePresence>
         {playing && (
           <motion.div
@@ -101,11 +101,11 @@ export default function IntroHero() {
 
       {/* Deep navy field, matching the film's background so the handoff is seamless */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_78%_28%,#12304F_0%,#0A1B30_45%,#050B1A_100%)]" />
-        <div className="absolute right-[8%] top-[10%] h-[38rem] w-[38rem] rounded-full bg-turkish/20 blur-[120px]" />
-        <div className="absolute -left-24 bottom-[-8rem] h-[26rem] w-[26rem] rounded-full bg-gold/10 blur-[110px]" />
+        <div className="hero-gradient absolute inset-0" />
+        <div className="hero-blue-accent absolute right-[8%] top-[10%] h-[38rem] w-[38rem] rounded-full blur-[120px]" />
+        <div className="hero-gold-accent absolute -left-24 bottom-[-8rem] h-[26rem] w-[26rem] rounded-full blur-[110px]" />
         {[...Array(16)].map((_, i) => (
-          <motion.span key={i} className="absolute rounded-full bg-white"
+          <motion.span key={i} className="absolute rounded-full bg-ink/15 dark:bg-white"
             style={{
               left: `${(i * 37) % 96}%`, top: `${(i * 53) % 88}%`,
               width: i % 3 === 0 ? 3 : 2, height: i % 3 === 0 ? 3 : 2, opacity: 0.22,
@@ -121,21 +121,21 @@ export default function IntroHero() {
           animate={!playing ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
           transition={{ duration: 1.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="tracking-wide text-turkish-light">Easwari Engineering College · Ramapuram</p>
-          <h1 className="font-display mt-3 text-4xl leading-tight text-white sm:text-5xl md:text-6xl">
+          <p className="tracking-wide text-turkish-dark dark:text-turkish-light">Easwari Engineering College · Ramapuram</p>
+          <h1 className="font-display mt-3 text-4xl leading-tight text-ink dark:text-white sm:text-5xl md:text-6xl">
             Indian Society for<br />Technical Education
           </h1>
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
+          <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink/70 dark:text-white/70">
             The student chapter that turns classroom engineering into built things — hackathons,
             workshops, industry sessions and a community that keeps going after the certificate.
           </p>
-          <p className="mt-4 text-sm tracking-[0.18em] text-gold-light">
+          <p className="mt-4 text-sm tracking-[0.18em] text-gold-deep dark:text-gold-light">
             INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/events" className="btn-primary">See upcoming events</Link>
             <Link to="/membership"
-              className="btn border border-white/40 text-white hover:border-turkish hover:text-turkish-light">
+              className="btn border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
               Get membership
             </Link>
           </div>
@@ -149,14 +149,14 @@ export default function IntroHero() {
           transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="relative">
-            <div className="absolute -inset-8 rounded-full border border-white/15" />
-            <div className="absolute -inset-16 rounded-full border border-white/[0.07]" />
+            <div className="absolute -inset-8 rounded-full border border-ink/15 dark:border-white/15" />
+            <div className="absolute -inset-16 rounded-full border border-ink/[0.07] dark:border-white/[0.07]" />
             <IsteMark shine delay={1.2} className="relative h-56 w-56 sm:h-72 sm:w-72 md:h-80 md:w-80" />
           </div>
         </motion.div>
       </div>
 
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-white dark:to-night" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F5F7F8] dark:to-night" />
     </section>
   )
 }
