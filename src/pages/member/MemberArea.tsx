@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
-import { Award, BookOpen, BrainCircuit, IdCard, Settings, Ticket, LogOut, Download } from 'lucide-react'
+import { Award, BookOpen, BrainCircuit, IdCard, Settings, Ticket, LogOut, Download, Plus } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
+import { supabase } from '../../lib/supabase'
 import { IsteMark } from '../../components/Logo'
 import type { MemberRecord } from '../../lib/types'
 
@@ -15,7 +16,7 @@ type Tab = 'card' | 'events' | 'vault' | 'archive' | 'skill' | 'profile'
 const tabs: { id: Tab; label: string; icon: typeof IdCard }[] = [
   { id: 'card',    label: 'Membership card', icon: IdCard },
   { id: 'events',  label: 'Priority events', icon: Ticket },
-  { id: 'vault',   label: 'Certificate vault', icon: Award },
+  { id: 'vault',   label: 'My Certificates',  icon: Award },
   { id: 'archive', label: 'Exclusive archive', icon: BookOpen },
   { id: 'skill',   label: 'Skill Zone',      icon: BrainCircuit },
   { id: 'profile', label: 'Profile',         icon: Settings },
@@ -260,26 +261,139 @@ function PriorityEvents() {
 
 // ---------------------------------------------------------------- Vault
 function Vault({ memberId }: { memberId: string }) {
-  const { data, loading } = useAsync(() => api.listCertificates(memberId), [memberId])
+  const { data, loading, error, reload } = useAsync(() => api.listCertificates(memberId), [memberId])
+  const events = useAsync(() => api.listEvents(), [])
+  const [showForm, setShowForm] = useState(false)
+  const [certificateType, setCertificateType] = useState<'Merit' | 'Participation'>('Participation')
+  const [rank, setRank] = useState('')
+  const [eventId, setEventId] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const certs = data ?? []
-  if (loading) return <p className="text-white/60">Loading…</p>
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    const event = events.data?.find((item) => item.id === eventId)
+    if (!event || !file) {
+      setFormError('Choose an event and certificate image before submitting.')
+      return
+    }
+    setSubmitting(true)
+    setFormError(null)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('You must be signed in to submit a certificate.')
+      const { data: memberData, error: memberError } = await supabase.from('members').select('id').eq('profile_id', user.id).single()
+      if (memberError) throw memberError
+
+      const fileUrl = await api.uploadCertificate(file)
+      console.log('Certificate member IDs:', { userId: user.id, memberId: memberData.id })
+      await api.submitCertificate({
+        member_id: memberData.id,
+        event_id: event.id,
+        event_title: event.title,
+        certificate_type: certificateType,
+        rank: certificateType === 'Merit' ? (rank as '1st Prize' | '2nd Prize' | '3rd Prize' | 'Excellence') : null,
+        file_url: fileUrl,
+        issued_on: new Date().toISOString().slice(0, 10),
+        status: 'pending',
+      })
+      setShowForm(false)
+      setCertificateType('Participation')
+      setRank('')
+      setEventId('')
+      setFile(null)
+      reload()
+    } catch (submitError) {
+      setFormError(submitError instanceof Error ? submitError.message : 'Could not submit certificate.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div>
-      <h1 className="dash text-3xl font-semibold text-gold-light">Certificate vault</h1>
-      <p className="mt-2 text-white/60">Every certificate you've earned, kept permanently.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="dash text-3xl font-semibold text-gold-light">My Certificates</h1>
+          <p className="mt-2 text-white/60">Submit certificates earned at ISTE events for review.</p>
+        </div>
+        <button onClick={() => { setShowForm(!showForm); setFormError(null) }}
+          className="inline-flex items-center gap-2 bg-gold px-4 py-2.5 text-sm text-black hover:bg-gold-light">
+          <Plus size={17} /> {showForm ? 'Close' : 'Add Certificate'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={submit} className="mt-6 border border-gold/40 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm text-white/70">
+              Certificate Type
+              <select value={certificateType} onChange={(e) => setCertificateType(e.target.value as 'Merit' | 'Participation')}
+                className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold">
+                <option value="Merit">Merit</option>
+                <option value="Participation">Participation</option>
+              </select>
+            </label>
+
+            {certificateType === 'Merit' && (
+              <label className="block text-sm text-white/70">
+                Rank
+                <select required value={rank} onChange={(e) => setRank(e.target.value)}
+                  className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold">
+                  <option value="">Select rank</option>
+                  <option>1st Prize</option>
+                  <option>2nd Prize</option>
+                  <option>3rd Prize</option>
+                  <option>Excellence</option>
+                </select>
+              </label>
+            )}
+
+            <label className="block text-sm text-white/70">
+              Event
+              <select required value={eventId} onChange={(e) => setEventId(e.target.value)} disabled={events.loading}
+                className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold disabled:opacity-50">
+                <option value="">{events.loading ? 'Loading events…' : 'Select event'}</option>
+                {(events.data ?? []).map((event) => <option key={event.id} value={event.id}>{event.title}</option>)}
+              </select>
+            </label>
+
+            <label className="block text-sm text-white/70">
+              Certificate image
+              <input required type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                className="mt-2 block w-full border border-gold/40 bg-black px-3 py-2 text-sm text-white file:mr-3 file:border-0 file:bg-gold file:px-3 file:py-1.5 file:text-black" />
+            </label>
+          </div>
+          {formError && <p className="mt-4 text-sm text-red-300">{formError}</p>}
+          <button type="submit" disabled={submitting || events.loading}
+            className="mt-5 bg-gold px-5 py-2.5 text-black hover:bg-gold-light disabled:opacity-50">
+            {submitting ? 'Submitting…' : 'Submit for review'}
+          </button>
+        </form>
+      )}
+
+      {loading ? <p className="mt-6 text-white/60">Loading…</p> : error ? <p className="mt-6 text-red-300">{error}</p> : null}
       {!certs.length ? (
-        <p className="mt-6 text-white/50">Nothing here yet. Certificates land here after each event you attend.</p>
+        !loading && <p className="mt-6 text-white/50">No certificates submitted yet.</p>
       ) : (
         <ul className="mt-6 divide-y divide-gold/20 border border-gold/30">
           {certs.map((c) => (
-            <li key={c.id} className="flex items-center justify-between p-4">
+            <li key={c.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p>{c.event_title}</p>
-                <p className="text-sm text-white/50">Issued {new Date(c.issued_on).toLocaleDateString('en-IN')}</p>
+                <p className="font-semibold">{c.event_title}</p>
+                <p className="mt-1 text-sm text-white/60">
+                  {c.certificate_type}{c.rank ? ` · ${c.rank}` : ''} · Issued {new Date(c.issued_on).toLocaleDateString('en-IN')}
+                </p>
               </div>
-              <a href={c.file_url} target="_blank" rel="noreferrer"
-                className="border border-gold px-4 py-1.5 text-sm text-gold-light hover:bg-gold/10">Download</a>
+              {c.status === 'pending' ? (
+                <span className="w-fit border border-yellow-500/60 px-3 py-1.5 text-sm text-yellow-300">Pending Review</span>
+              ) : (
+                <a href={c.file_url} target="_blank" rel="noreferrer">
+                  <img src={c.file_url} alt={`${c.event_title} certificate`} className="h-24 w-36 border border-gold/40 object-cover" />
+                </a>
+              )}
             </li>
           ))}
         </ul>

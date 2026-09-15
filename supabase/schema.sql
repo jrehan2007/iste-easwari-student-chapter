@@ -183,11 +183,18 @@ create table if not exists certificates (
   event_id uuid references events on delete set null,
   pass_id uuid references event_passes on delete set null,
   event_title text not null,
+  certificate_type text not null default 'Participation' check (certificate_type in ('Merit', 'Participation')),
+  rank text check (rank in ('1st Prize', '2nd Prize', '3rd Prize', 'Excellence')),
   recipient_name text,
   recipient_email text,
   file_url text not null,
-  issued_on date default current_date
+  issued_on date default current_date,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected'))
 );
+
+alter table certificates add column if not exists certificate_type text not null default 'Participation';
+alter table certificates add column if not exists rank text;
+alter table certificates add column if not exists status text not null default 'pending';
 
 -- ---------------------------------------------------------------- skill zone
 create table if not exists quizzes (
@@ -380,6 +387,9 @@ create policy "members read resources" on resources for select
 create policy "own certificates" on certificates for select
   using (member_id in (select id from members where profile_id = auth.uid()) or is_admin());
 
+create policy "members submit certificates" on certificates for insert
+  with check (member_id in (select id from members where profile_id = auth.uid()));
+
 create policy "members read live quizzes" on quizzes for select
   using ((is_live and is_active_member()) or is_admin());
 
@@ -393,10 +403,14 @@ create policy "own attempts" on quiz_attempts for select
   using (member_id in (select id from members where profile_id = auth.uid()) or is_admin());
 
 -- =====================================================================
--- Storage. Create these buckets in the dashboard first:
+-- Storage buckets:
 --   event-banners, gallery, member-photos  (public)
 --   certificates                            (private)
 -- =====================================================================
+
+insert into storage.buckets (id, name, public)
+values ('certificates', 'certificates', false)
+on conflict (id) do update set public = false;
 
 do $$
 declare b text;
@@ -412,6 +426,18 @@ begin
       execute format('create policy "admins delete %1$s" on storage.objects for delete to authenticated using (bucket_id = %1$L and is_admin())', b);
     exception when duplicate_object then null; end;
   end loop;
+end $$;
+
+do $$
+begin
+  execute 'create policy "members upload certificates" on storage.objects for insert to authenticated with check (bucket_id = ''certificates'' and (storage.foldername(name))[1] = auth.uid()::text)';
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  execute 'create policy "members read certificates" on storage.objects for select to authenticated using (bucket_id = ''certificates'' and ((storage.foldername(name))[1] = auth.uid()::text or is_admin()))';
+exception when duplicate_object then null;
 end $$;
 
 -- =====================================================================

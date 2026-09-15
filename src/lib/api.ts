@@ -1,8 +1,8 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import type {
   Announcement, Certificate, ChapterEvent, Domain, EventPass, EventStatus,
-  GalleryFolder, GalleryPhoto, Lane, MemberRecord, MembershipSettings,
-  Quiz, QuizAttempt, QuizQuestion, Resource, ScanResult, TeamMember,
+  GalleryFolder, GalleryPhoto, Lane, MemberRecord, MembershipSettings, PendingCertificate,
+  AnalyticsReport, Quiz, QuizAttempt, QuizQuestion, Resource, ScanResult, TeamMember,
 } from './types'
 
 /**
@@ -384,9 +384,49 @@ export async function deleteResource(id: string) {
 // ---------------------------------------------------------------- certificates
 export async function listCertificates(memberId: string) {
   if (!isSupabaseConfigured) return []
-  const { data, error } = await supabase.from('certificates').select('*').eq('member_id', memberId)
+  const { data, error } = await supabase.from('certificates').select('*')
+    .eq('member_id', memberId).order('issued_on', { ascending: false })
   if (error) throw error
   return (data ?? []) as Certificate[]
+}
+
+export async function uploadCertificate(file: File) {
+  guard()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('You must be signed in to upload a certificate.')
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-')
+  const path = `${user.id}/${Date.now()}-${safeName}`
+  const { error } = await supabase.storage.from('certificates').upload(path, file)
+  if (error) throw error
+  const { data, error: signedUrlError } = await supabase.storage
+    .from('certificates').createSignedUrl(path, 60 * 60 * 24 * 365)
+  if (signedUrlError) throw signedUrlError
+  return data.signedUrl
+}
+
+export async function submitCertificate(row: {
+  member_id: string; event_id: string; event_title: string
+  certificate_type: 'Merit' | 'Participation'
+  rank?: '1st Prize' | '2nd Prize' | '3rd Prize' | 'Excellence' | null
+  file_url: string; issued_on: string; status: 'pending'
+}) {
+  guard()
+  const { error } = await supabase.from('certificates').insert(row)
+  if (error) throw error
+}
+
+export async function listPendingCertificates() {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase.from('certificates')
+    .select('*, members(full_name)').eq('status', 'pending').order('issued_on', { ascending: true })
+  if (error) throw error
+  return (data ?? []) as PendingCertificate[]
+}
+
+export async function updateCertificateStatus(id: string, status: 'approved' | 'rejected') {
+  guard()
+  const { error } = await supabase.from('certificates').update({ status }).eq('id', id)
+  if (error) throw error
 }
 
 export async function issueCertificate(row: {
@@ -470,29 +510,57 @@ export async function submitFeedback(row: { name: string; email: string; message
 
 // ---------------------------------------------------------------- analytics
 export async function analytics() {
-  if (!isSupabaseConfigured)
-    return { members: 0, events: 0, passes: 0, checkins: 0, growth: [] as { month: string; count: number }[] }
+  const empty: AnalyticsReport = {
+    totalMembers: 0, activeMembers: 0, inactiveMembers: 0, growth: [], eventParticipation: [], leaderboard: [],
+  }
+  if (!isSupabaseConfigured) return empty
 
-  const [m, e, p, c] = await Promise.all([
-    supabase.from('members').select('id, created_at').eq('status', 'active'),
-    supabase.from('events').select('id', { count: 'exact', head: true }),
-    supabase.from('event_passes').select('id', { count: 'exact', head: true }),
-    supabase.from('event_passes').select('id', { count: 'exact', head: true }).not('checked_in_at', 'is', null),
+  const [membersResult, eventsResult, passesResult] = await Promise.all([
+    supabase.from('members').select('id, full_name, created_at'),
+    supabase.from('events').select('id, title').order('starts_at', { ascending: false }),
+    supabase.from('event_passes').select('member_id, event_id, checked_in_at').not('checked_in_at', 'is', null),
   ])
+  if (membersResult.error) throw membersResult.error
+  if (eventsResult.error) throw eventsResult.error
+  if (passesResult.error) throw passesResult.error
+
+  const members = membersResult.data ?? []
+  const events = eventsResult.data ?? []
+  const checkedIn = passesResult.data ?? []
+  const memberNames = new Map(members.map((member) => [member.id, member.full_name]))
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
+  const activeIds = new Set(
+    checkedIn.filter((pass) => pass.member_id && new Date(pass.checked_in_at).getTime() >= cutoff)
+      .map((pass) => pass.member_id as string),
+  )
 
   const byMonth = new Map<string, number>()
-  ;(m.data ?? []).forEach((row: { created_at: string }) => {
-    const key = new Date(row.created_at).toLocaleString('en-IN', { month: 'short', year: '2-digit' })
-    byMonth.set(key, (byMonth.get(key) ?? 0) + 1)
+  members.forEach((member) => {
+    const date = new Date(member.created_at)
+    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    byMonth.set(month, (byMonth.get(month) ?? 0) + 1)
   })
-  let running = 0
-  const growth = [...byMonth.entries()].map(([month, n]) => ({ month, count: (running += n) }))
+
+  const eventCounts = new Map<string, Set<string>>()
+  const memberCounts = new Map<string, number>()
+  checkedIn.forEach((pass) => {
+    if (!pass.member_id) return
+    const eventMembers = eventCounts.get(pass.event_id) ?? new Set<string>()
+    eventMembers.add(pass.member_id)
+    eventCounts.set(pass.event_id, eventMembers)
+    memberCounts.set(pass.member_id, (memberCounts.get(pass.member_id) ?? 0) + 1)
+  })
 
   return {
-    members: m.data?.length ?? 0,
-    events: e.count ?? 0,
-    passes: p.count ?? 0,
-    checkins: c.count ?? 0,
-    growth,
-  }
+    totalMembers: members.length,
+    activeMembers: activeIds.size,
+    inactiveMembers: members.length - activeIds.size,
+    growth: [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count })),
+    eventParticipation: events.map((event) => ({
+      eventId: event.id, eventTitle: event.title, count: eventCounts.get(event.id)?.size ?? 0,
+    })),
+    leaderboard: [...memberCounts.entries()]
+      .sort(([, a], [, b]) => b - a).slice(0, 5)
+      .map(([memberId, count]) => ({ memberId, memberName: memberNames.get(memberId) ?? 'Unknown member', count })),
+  } satisfies AnalyticsReport
 }

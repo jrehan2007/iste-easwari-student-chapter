@@ -129,10 +129,27 @@ export interface Resource {
 export interface Certificate {
   id: string
   member_id: string
+  event_id?: string | null
   event_title: string
+  certificate_type: 'Merit' | 'Participation'
+  rank?: '1st Prize' | '2nd Prize' | '3rd Prize' | 'Excellence' | null
   recipient_name?: string
   issued_on: string
   file_url: string
+  status: 'pending' | string
+}
+
+export interface PendingCertificate extends Certificate {
+  members: { full_name: string } | null
+}
+
+export interface AnalyticsReport {
+  totalMembers: number
+  activeMembers: number
+  inactiveMembers: number
+  growth: { month: string; count: number }[]
+  eventParticipation: { eventId: string; eventTitle: string; count: number }[]
+  leaderboard: { memberId: string; memberName: string; count: number }[]
 }
 
 export interface Quiz { id: string; title: string; topic?: string; is_live: boolean }

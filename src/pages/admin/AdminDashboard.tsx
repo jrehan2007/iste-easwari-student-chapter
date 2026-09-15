@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, BrainCircuit, Settings2,
+  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, BrainCircuit, Settings2, Award,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
@@ -10,12 +10,13 @@ import QrPanel from './QrPanel'
 import type { Lane, MembershipSettings } from '../../lib/types'
 
 type Tab = 'events' | 'passes' | 'membership' | 'settings' | 'roles'
-         | 'pinboard' | 'gallery' | 'resources' | 'quizzes' | 'analytics'
+         | 'pinboard' | 'gallery' | 'resources' | 'quizzes' | 'analytics' | 'certificates'
 
 const sections: { id: Tab; label: string; icon: typeof CalendarDays }[] = [
   { id: 'events',     label: 'Events',          icon: CalendarDays },
   { id: 'passes',     label: 'Passes & scanner', icon: QrCode },
   { id: 'membership', label: 'Members',         icon: IdCard },
+  { id: 'certificates', label: 'Certificate Approvals', icon: Award },
   { id: 'settings',   label: 'Membership page',  icon: Settings2 },
   { id: 'roles',      label: 'Roles',           icon: Users },
   { id: 'pinboard',   label: 'Pin board',       icon: Pin },
@@ -51,6 +52,7 @@ export default function AdminDashboard() {
           {tab === 'events'     && <EventsPanel />}
           {tab === 'passes'     && <QrPanel />}
           {tab === 'membership' && <MembersPanel />}
+          {tab === 'certificates' && <CertificateApprovalsPanel />}
           {tab === 'settings'   && <MembershipSettingsPanel />}
           {tab === 'roles'      && <RolesPanel />}
           {tab === 'pinboard'   && <PinPanel />}
@@ -61,6 +63,55 @@ export default function AdminDashboard() {
         </section>
       </div>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------- Certificate approvals
+function CertificateApprovalsPanel() {
+  const pending = useAsync(() => api.listPendingCertificates(), [])
+  const { run, banner } = useSaver()
+  const [resolved, setResolved] = useState<Set<string>>(new Set())
+  const certificates = (pending.data ?? []).filter((certificate) => !resolved.has(certificate.id))
+
+  function resolve(id: string, status: 'approved' | 'rejected') {
+    run(
+      () => api.updateCertificateStatus(id, status),
+      status === 'approved' ? 'Certificate approved.' : 'Certificate rejected.',
+      () => setResolved((current) => new Set(current).add(id)),
+    )
+  }
+
+  return (
+    <Panel title="Certificate Approvals" hint="Review member-submitted certificates awaiting approval.">
+      {banner}
+      {pending.loading ? <p className="muted">Loading…</p> : pending.error ? (
+        <p className="text-red-700 dark:text-red-300">{pending.error}</p>
+      ) : !certificates.length ? (
+        <p className="muted">No certificates pending review.</p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {certificates.map((certificate) => (
+            <article key={certificate.id} className="card">
+              <a href={certificate.file_url} target="_blank" rel="noreferrer"
+                className="block overflow-hidden border border-turkish/20 dark:border-night-line">
+                <img src={certificate.file_url} alt={`${certificate.event_title} certificate`}
+                  className="h-52 w-full object-contain" />
+              </a>
+              <div className="mt-4 space-y-1 text-sm">
+                <h3 className="font-display text-lg font-semibold">{certificate.members?.full_name ?? 'Unknown member'}</h3>
+                <p>{certificate.event_title}</p>
+                <p className="muted">{certificate.certificate_type}{certificate.rank ? ` · ${certificate.rank}` : ''}</p>
+                <p className="muted">Issued {new Date(certificate.issued_on).toLocaleDateString('en-IN')}</p>
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button className="btn-primary" onClick={() => resolve(certificate.id, 'approved')}>Approve</button>
+                <button className="btn-outline" onClick={() => resolve(certificate.id, 'rejected')}>Reject</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </Panel>
   )
 }
 
@@ -608,16 +659,15 @@ function AnalyticsPanel() {
   if (loading || !data) return <Panel title="Analytics"><p className="muted">Loading…</p></Panel>
 
   const stats = [
-    { label: 'Active members', value: data.members },
-    { label: 'Events', value: data.events },
-    { label: 'Passes issued', value: data.passes },
-    { label: 'Checked in', value: data.checkins },
+    { label: 'Total members', value: data.totalMembers },
+    { label: 'Active in last 30 days', value: data.activeMembers },
+    { label: 'Inactive members', value: data.inactiveMembers },
   ]
   const peak = Math.max(1, ...data.growth.map((g) => g.count))
 
   return (
-    <Panel title="Analytics" hint="Attendance and membership growth.">
-      <div className="grid gap-3 sm:grid-cols-4">
+    <Panel title="Analytics" hint="Membership growth and event attendance based on recorded check-ins.">
+      <div className="grid gap-3 sm:grid-cols-3">
         {stats.map((s) => (
           <div key={s.label} className="card">
             <p className="font-display text-3xl font-semibold text-turkish-dark dark:text-turkish-light">{s.value}</p>
@@ -626,17 +676,49 @@ function AnalyticsPanel() {
         ))}
       </div>
       <div className="card">
-        <p className="font-display font-semibold">Membership growth</p>
+        <p className="font-display font-semibold">Members joined by month</p>
         {data.growth.length ? (
           <div className="mt-4 flex h-40 items-end gap-3">
             {data.growth.map((g) => (
               <div key={g.month} className="flex flex-1 flex-col items-center gap-2">
                 <div className="w-full bg-turkish" style={{ height: `${(g.count / peak) * 100}%` }} title={String(g.count)} />
-                <span className="muted text-xs">{g.month}</span>
+                <span className="muted text-center text-xs">{g.month}</span>
               </div>
             ))}
           </div>
         ) : <p className="muted mt-3">No members yet.</p>}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="card">
+          <p className="font-display font-semibold">Event participation</p>
+          {data.eventParticipation.length ? (
+            <Table head={['Event', 'Members checked in']}>
+              {data.eventParticipation.map((event) => (
+                <Row key={event.eventId}>
+                  <td className="p-3">{event.eventTitle}</td>
+                  <td className="p-3 text-right">{event.count}</td>
+                </Row>
+              ))}
+            </Table>
+          ) : <p className="muted mt-3">No events yet.</p>}
+        </div>
+
+        <div className="card">
+          <p className="font-display font-semibold">Top 5 most active members</p>
+          {data.leaderboard.length ? (
+            <ol className="mt-3 divide-y divide-turkish/15 dark:divide-night-line">
+              {data.leaderboard.map((member, index) => (
+                <li key={member.memberId} className="flex items-center justify-between gap-3 py-3 text-sm">
+                  <span><span className="muted mr-3">{index + 1}.</span>{member.memberName}</span>
+                  <span className="font-semibold text-turkish-dark dark:text-turkish-light">
+                    {member.count} {member.count === 1 ? 'check-in' : 'check-ins'}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : <p className="muted mt-3">No member attendance recorded yet.</p>}
+        </div>
       </div>
     </Panel>
   )
