@@ -44,6 +44,69 @@ body {
 .hero-gold-accent { background-color: rgb(201 162 39 / 0.06); }
 .dark .hero-gold-accent { background-color: rgb(201 162 39 / 0.1); }
 
+.member-shell {
+  background:
+    radial-gradient(80% 50% at 50% 0%, rgb(201 162 39 / 0.14), transparent 68%),
+    #0A0A0A;
+}
+
+.member-panel {
+  border: 1px solid rgb(201 162 39 / 0.36);
+  background: rgb(10 10 10 / 0.78);
+  box-shadow: 0 14px 40px rgb(0 0 0 / 0.22);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.member-panel:hover {
+  border-color: rgb(232 206 114 / 0.72);
+  box-shadow: 0 0 26px rgb(201 162 39 / 0.12), 0 16px 44px rgb(0 0 0 / 0.28);
+}
+
+.member-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.member-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgb(232 206 114 / 0.1) 48%, transparent 65%);
+  transform: translateX(-120%);
+  animation: member-shimmer 12s ease-in-out infinite;
+}
+
+.member-field {
+  border-color: rgb(201 162 39 / 0.4);
+  background: rgb(0 0 0 / 0.72);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.member-field:focus {
+  border-color: #E8CE72;
+  box-shadow: 0 0 0 3px rgb(201 162 39 / 0.12);
+}
+
+.member-tab { border: 1px solid transparent; }
+.member-tab:not(.bg-gold) { border-color: rgb(201 162 39 / 0.22); }
+.member-tab:not(.bg-gold):hover {
+  border-color: rgb(201 162 39 / 0.62);
+  background: rgb(201 162 39 / 0.08);
+  box-shadow: 0 0 18px rgb(201 162 39 / 0.1);
+}
+
+@keyframes member-shimmer {
+  0%, 72%, 100% { transform: translateX(-120%); }
+  86% { transform: translateX(120%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member-card::after { animation: none; }
+}
+
 @layer components {
   .container-page { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
 

@@ -39,8 +39,9 @@ export default function MemberArea() {
   }, [intro])
 
   return (
-    <div className="dash relative isolate min-h-screen overflow-hidden bg-black text-white">
-      <DashboardVideoBackground />
+    <div className="dash member-shell relative isolate min-h-screen overflow-hidden text-white">
+      <DashboardVideoBackground src="/member-bg.mp4" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(55%_38%_at_50%_0%,rgba(201,162,39,0.16),transparent_72%)]" />
       {intro && (
         <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           animate={{ opacity: [1, 1, 0] }} transition={{ duration: 2.6, times: [0, 0.72, 1] }}
@@ -58,7 +59,7 @@ export default function MemberArea() {
         </motion.div>
       )}
 
-      <header className="relative z-10 border-b border-gold/40">
+      <header className="relative z-10 border-b border-gold/40 bg-black/20">
         <div className="container-page flex flex-wrap items-center justify-between gap-4 py-5">
           <Link to="/" className="flex items-center gap-3">
             <IsteMark className="h-10 w-10" />
@@ -81,7 +82,7 @@ export default function MemberArea() {
         <nav className="flex gap-2 overflow-x-auto lg:flex-col">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 text-left transition ${
+              className={`member-tab flex shrink-0 items-center gap-2 px-4 py-2.5 text-left transition ${
                 tab === t.id ? 'bg-gold text-black' : 'text-white/70 hover:text-gold-light'}`}>
               <t.icon size={18} /> {t.label}
             </button>
@@ -109,7 +110,7 @@ export default function MemberArea() {
 
 function NotAMember() {
   return (
-    <div className="border border-gold/40 p-8">
+    <div className="member-panel p-8">
       <h1 className="dash text-2xl font-semibold text-gold-light">No active membership on this account</h1>
       <p className="mt-3 text-white/60">
         If you've paid, ask the chapter secretary to create your record. Your card and certificate
@@ -155,7 +156,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
 
       {/* 1.586:1, standard card ratio */}
       <div ref={card}
-        className="relative mt-7 w-full max-w-[560px] overflow-hidden border-2 border-gold bg-gradient-to-br from-[#171106] via-[#0B0803] to-black p-6">
+        className="member-panel member-card relative mt-7 w-full max-w-[560px] border-2 border-gold bg-gradient-to-br from-[#171106] via-[#0B0803] to-black p-6">
         {/* traceable watermark */}
         <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-5xl font-bold text-white/[0.035]">
           {member.member_code}
@@ -236,7 +237,7 @@ function PriorityEvents() {
         {list.map((e) => {
           const early = e.public_opens_at && new Date(e.public_opens_at) > new Date()
           return (
-            <article key={e.id} className="border border-gold/40 p-5">
+            <article key={e.id} className="member-panel p-5">
               {early && (
                 <p className="mb-2 text-xs uppercase tracking-widest text-gold-light">
                   Members only — public from {new Date(e.public_opens_at!).toLocaleDateString('en-IN')}
@@ -328,12 +329,12 @@ function Vault({ memberId }: { memberId: string }) {
       </div>
 
       {showForm && (
-        <form onSubmit={submit} className="mt-6 border border-gold/40 p-5">
+        <form onSubmit={submit} className="member-panel mt-6 p-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm text-white/70">
               Certificate Type
               <select value={certificateType} onChange={(e) => setCertificateType(e.target.value as 'Merit' | 'Participation')}
-                className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold">
+                className="member-field mt-2 w-full border px-3 py-2.5 text-white outline-none">
                 <option value="Merit">Merit</option>
                 <option value="Participation">Participation</option>
               </select>
@@ -343,7 +344,7 @@ function Vault({ memberId }: { memberId: string }) {
               <label className="block text-sm text-white/70">
                 Rank
                 <select required value={rank} onChange={(e) => setRank(e.target.value)}
-                  className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold">
+                  className="member-field mt-2 w-full border px-3 py-2.5 text-white outline-none">
                   <option value="">Select rank</option>
                   <option>1st Prize</option>
                   <option>2nd Prize</option>
@@ -356,7 +357,7 @@ function Vault({ memberId }: { memberId: string }) {
             <label className="block text-sm text-white/70">
               Event
               <select required value={eventId} onChange={(e) => setEventId(e.target.value)} disabled={events.loading}
-                className="mt-2 w-full border border-gold/40 bg-black px-3 py-2.5 text-white outline-none focus:border-gold disabled:opacity-50">
+                className="member-field mt-2 w-full border px-3 py-2.5 text-white outline-none disabled:opacity-50">
                 <option value="">{events.loading ? 'Loading events…' : 'Select event'}</option>
                 {(events.data ?? []).map((event) => <option key={event.id} value={event.id}>{event.title}</option>)}
               </select>
@@ -365,7 +366,7 @@ function Vault({ memberId }: { memberId: string }) {
             <label className="block text-sm text-white/70">
               Certificate image
               <input required type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="mt-2 block w-full border border-gold/40 bg-black px-3 py-2 text-sm text-white file:mr-3 file:border-0 file:bg-gold file:px-3 file:py-1.5 file:text-black" />
+                className="member-field mt-2 block w-full border px-3 py-2 text-sm text-white file:mr-3 file:border-0 file:bg-gold file:px-3 file:py-1.5 file:text-black" />
             </label>
           </div>
           {formError && <p className="mt-4 text-sm text-red-300">{formError}</p>}
@@ -380,7 +381,7 @@ function Vault({ memberId }: { memberId: string }) {
       {!certs.length ? (
         !loading && <p className="mt-6 text-white/50">No certificates submitted yet.</p>
       ) : (
-        <ul className="mt-6 divide-y divide-gold/20 border border-gold/30">
+        <ul className="member-panel mt-6 divide-y divide-gold/20">
           {certs.map((c) => (
             <li key={c.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -425,7 +426,7 @@ function Archive() {
             <h2 className="dash text-lg font-semibold">{labels[g]}</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {items.map((r) => (
-                <li key={r.id} className="border border-gold/30 p-4 transition hover:border-gold">
+                <li key={r.id} className="member-panel p-4">
                   <p className="dash font-semibold">{r.title}</p>
                   {r.description && <p className="mt-1 text-sm text-white/60">{r.description}</p>}
                   <a href={r.external_url || r.file_url} target="_blank" rel="noreferrer"
@@ -473,7 +474,7 @@ function SkillZone({ memberId }: { memberId: string }) {
       {!quiz.data ? (
         <p className="mt-6 text-white/50">No quiz is live right now. Check back soon.</p>
       ) : (
-        <div className="mt-6 border border-gold/40 p-6">
+        <div className="member-panel mt-6 p-6">
           <p className="text-sm text-white/50">{quiz.data.topic}</p>
           <h2 className="dash mt-1 text-xl font-semibold">{quiz.data.title}</h2>
 
@@ -515,7 +516,7 @@ function SkillZone({ memberId }: { memberId: string }) {
       {attempts.data?.length ? (
         <>
           <h2 className="dash mt-8 text-lg font-semibold">Your past attempts</h2>
-          <ul className="mt-3 divide-y divide-gold/20 border border-gold/30">
+          <ul className="member-panel mt-3 divide-y divide-gold/20">
             {attempts.data.map((a) => (
               <li key={a.id} className="flex justify-between p-3 text-sm">
                 <span className="text-white/70">{new Date(a.attempted_at).toLocaleDateString('en-IN')}</span>
@@ -554,14 +555,14 @@ function Profile({ member, email, onSaved }:
         Renewal due {member.valid_till ? new Date(member.valid_till).toLocaleDateString('en-IN') : '—'}.
       </p>
 
-      <div className="mt-6 grid max-w-lg gap-4">
+      <div className="member-panel mt-6 grid max-w-lg gap-4 p-5">
         <label className="text-sm text-white/60">Full name
-          <input className="mt-1 w-full border border-gold/40 bg-black px-3 py-2 text-white"
+          <input className="member-field mt-1 w-full border px-3 py-2 text-white"
             value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label className="text-sm text-white/60">Photo
           <input type="file" accept="image/*"
-            className="mt-1 w-full border border-gold/40 bg-black px-3 py-2 text-white"
+            className="member-field mt-1 w-full border px-3 py-2 text-white"
             onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
         </label>
 
