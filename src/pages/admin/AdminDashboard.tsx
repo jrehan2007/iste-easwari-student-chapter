@@ -8,6 +8,7 @@ import * as api from '../../lib/api'
 import { Panel, Table, Row, Action, Danger, useSaver } from './panels'
 import QrPanel from './QrPanel'
 import type { Lane, MembershipSettings } from '../../lib/types'
+import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 
 type Tab = 'events' | 'passes' | 'membership' | 'settings' | 'roles'
          | 'pinboard' | 'gallery' | 'resources' | 'quizzes' | 'analytics' | 'certificates'
@@ -31,36 +32,39 @@ export default function AdminDashboard() {
   const { email } = useAuth()
 
   return (
-    <div className="container-page py-10">
-      <h1 className="section-title">Admin dashboard</h1>
-      <p className="muted mt-2">Signed in as {email}</p>
-      <div className="rule mt-5" />
+    <div className="dark relative isolate min-h-screen overflow-hidden bg-night text-slate-100">
+      <DashboardVideoBackground />
+      <div className="container-page relative z-10 py-10">
+        <h1 className="section-title">Admin dashboard</h1>
+        <p className="muted mt-2">Signed in as {email}</p>
+        <div className="rule mt-5" />
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[210px_1fr]">
-        <nav className="dash flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
-          {sections.map((s) => (
-            <button key={s.id} onClick={() => setTab(s.id)}
-              className={`dash-nav ${tab === s.id
-                ? 'bg-turkish text-white'
-                : 'text-ink/75 hover:bg-turkish-mist dark:text-slate-300 dark:hover:bg-night-soft'}`}>
-              <s.icon size={17} /> {s.label}
-            </button>
-          ))}
-        </nav>
+        <div className="mt-6 grid gap-8 lg:grid-cols-[210px_1fr]">
+          <nav className="dash flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+            {sections.map((s) => (
+              <button key={s.id} onClick={() => setTab(s.id)}
+                className={`dash-nav ${tab === s.id
+                  ? 'bg-turkish text-white'
+                  : 'text-ink/75 hover:bg-turkish-mist dark:text-slate-300 dark:hover:bg-night-soft'}`}>
+                <s.icon size={17} /> {s.label}
+              </button>
+            ))}
+          </nav>
 
-        <section>
-          {tab === 'events'     && <EventsPanel />}
-          {tab === 'passes'     && <QrPanel />}
-          {tab === 'membership' && <MembersPanel />}
-          {tab === 'certificates' && <CertificateApprovalsPanel />}
-          {tab === 'settings'   && <MembershipSettingsPanel />}
-          {tab === 'roles'      && <RolesPanel />}
-          {tab === 'pinboard'   && <PinPanel />}
-          {tab === 'gallery'    && <GalleryPanel />}
-          {tab === 'resources'  && <ResourcesPanel />}
-          {tab === 'quizzes'    && <QuizPanel />}
-          {tab === 'analytics'  && <AnalyticsPanel />}
-        </section>
+          <section>
+            {tab === 'events'     && <EventsPanel />}
+            {tab === 'passes'     && <QrPanel />}
+            {tab === 'membership' && <MembersPanel />}
+            {tab === 'certificates' && <CertificateApprovalsPanel />}
+            {tab === 'settings'   && <MembershipSettingsPanel />}
+            {tab === 'roles'      && <RolesPanel />}
+            {tab === 'pinboard'   && <PinPanel />}
+            {tab === 'gallery'    && <GalleryPanel />}
+            {tab === 'resources'  && <ResourcesPanel />}
+            {tab === 'quizzes'    && <QuizPanel />}
+            {tab === 'analytics'  && <AnalyticsPanel />}
+          </section>
+        </div>
       </div>
     </div>
   )

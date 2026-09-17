@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Volume2, VolumeX, SkipForward } from 'lucide-react'
 import { IsteMark } from './Logo'
+import HeroNetwork from './HeroNetwork'
 
 /**
  * Branded entry sequence.
@@ -104,18 +105,17 @@ export default function IntroHero() {
         <div className="hero-gradient absolute inset-0" />
         <div className="hero-blue-accent absolute right-[8%] top-[10%] h-[38rem] w-[38rem] rounded-full blur-[120px]" />
         <div className="hero-gold-accent absolute -left-24 bottom-[-8rem] h-[26rem] w-[26rem] rounded-full blur-[110px]" />
-        {[...Array(16)].map((_, i) => (
-          <motion.span key={i} className="absolute rounded-full bg-ink/15 dark:bg-white"
-            style={{
-              left: `${(i * 37) % 96}%`, top: `${(i * 53) % 88}%`,
-              width: i % 3 === 0 ? 3 : 2, height: i % 3 === 0 ? 3 : 2, opacity: 0.22,
-            }}
-            animate={{ y: [0, -18, 0], opacity: [0.08, 0.45, 0.08] }}
-            transition={{ duration: 6 + (i % 5), repeat: Infinity, delay: i * 0.35, ease: 'easeInOut' }} />
-        ))}
       </div>
 
-      <div className="container-page grid items-center gap-10 py-20 md:grid-cols-2 md:py-28">
+      <HeroNetwork />
+
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 overflow-hidden text-center">
+        <span className="font-display whitespace-nowrap text-[34vw] font-bold leading-none tracking-[0.06em] text-ink/[0.07] dark:text-white/[0.07]">
+          ISTE
+        </span>
+      </div>
+
+      <div className="container-page relative z-10 grid items-center gap-10 py-20 md:grid-cols-2 md:py-28">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={!playing ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}

@@ -9,6 +9,7 @@ import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
 import { supabase } from '../../lib/supabase'
 import { IsteMark } from '../../components/Logo'
+import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 import type { MemberRecord } from '../../lib/types'
 
 type Tab = 'card' | 'events' | 'vault' | 'archive' | 'skill' | 'profile'
@@ -38,7 +39,8 @@ export default function MemberArea() {
   }, [intro])
 
   return (
-    <div className="dash min-h-screen bg-black text-white">
+    <div className="dash relative isolate min-h-screen overflow-hidden bg-black text-white">
+      <DashboardVideoBackground />
       {intro && (
         <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           animate={{ opacity: [1, 1, 0] }} transition={{ duration: 2.6, times: [0, 0.72, 1] }}
@@ -56,12 +58,12 @@ export default function MemberArea() {
         </motion.div>
       )}
 
-      <header className="border-b border-gold/40">
+      <header className="relative z-10 border-b border-gold/40">
         <div className="container-page flex flex-wrap items-center justify-between gap-4 py-5">
           <Link to="/" className="flex items-center gap-3">
             <IsteMark className="h-10 w-10" />
             <div>
-              <p className="text-lg font-semibold tracking-wide text-gold-light">ISTE Easwari · Members</p>
+              <p className="font-display text-lg font-semibold tracking-wide text-gold-light">ISTE Easwari · Members</p>
               <p className="font-serif text-xs text-white/50">Indian Society for Technical Education</p>
             </div>
           </Link>
@@ -75,7 +77,7 @@ export default function MemberArea() {
         </div>
       </header>
 
-      <div className="container-page grid gap-8 py-10 lg:grid-cols-[230px_1fr]">
+      <div className="container-page relative z-10 grid gap-8 py-10 lg:grid-cols-[230px_1fr]">
         <nav className="flex gap-2 overflow-x-auto lg:flex-col">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)}

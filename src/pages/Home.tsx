@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useRef } from 'react'
+import { motion, useInView } from 'framer-motion'
 import IntroHero from '../components/IntroHero'
 import EmptyState from '../components/EmptyState'
 import { useAsync } from '../lib/useAsync'
@@ -7,12 +9,22 @@ import { listAnnouncements, listEvents } from '../lib/api'
 export default function Home() {
   const posts = useAsync(() => listAnnouncements(3), [])
   const upcoming = useAsync(() => listEvents('upcoming'), [])
+  const announcementsRef = useRef<HTMLElement>(null)
+  const announcementsVisible = useInView(announcementsRef, { once: true, amount: 0.2 })
+  const calendarRef = useRef<HTMLElement>(null)
+  const calendarVisible = useInView(calendarRef, { once: true, amount: 0.2 })
 
   return (
     <>
       <IntroHero />
 
-      <section className="container-page py-16">
+      <motion.section
+        ref={announcementsRef}
+        initial={{ opacity: 0, y: 36 }}
+        animate={announcementsVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="container-page py-16"
+      >
         <div className="flex items-end justify-between gap-4">
           <h2 className="section-title">Preview &amp; announcements</h2>
           <Link to="/pin-board" className="text-turkish-dark hover:underline dark:text-turkish-light">Open the pin board</Link>
@@ -35,9 +47,15 @@ export default function Home() {
               ))}
             </div>
           )}
-      </section>
+      </motion.section>
 
-      <section className="bg-[#E8F1F4] py-16 dark:bg-night-soft">
+      <motion.section
+        ref={calendarRef}
+        initial={{ opacity: 0, y: 36 }}
+        animate={calendarVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-[#E8F1F4] py-16 dark:bg-night-soft"
+      >
         <div className="container-page">
           <h2 className="section-title">Next on the calendar</h2>
           <div className="rule mt-4" />
@@ -60,7 +78,7 @@ export default function Home() {
               </div>
             )}
         </div>
-      </section>
+      </motion.section>
     </>
   )
 }

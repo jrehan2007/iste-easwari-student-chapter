@@ -1,3 +1,4 @@
+import { useState, type CSSProperties, type MouseEvent } from 'react'
 import { motion } from 'framer-motion'
 
 /**
@@ -13,12 +14,37 @@ export function IsteMark({
   shine = false,
   delay = 0,
 }: { className?: string; shine?: boolean; delay?: number }) {
-  if (!shine) {
-    return <img src="/iste-logo.png" alt="ISTE" className={`${className} rounded-full object-cover shrink-0`} />
+  const [tilt, setTilt] = useState({ x: 0, y: 0, light: 50 })
+
+  function handleMouseMove(event: MouseEvent<HTMLDivElement>) {
+    if (event.currentTarget.ownerDocument.defaultView?.matchMedia('(pointer: coarse)').matches) return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5
+    setTilt({ x: y * -8, y: x * 8, light: 50 + x * 60 })
   }
 
+  function resetTilt() {
+    setTilt({ x: 0, y: 0, light: 50 })
+  }
+
+  const logo = <img src="/iste-logo.png" alt="ISTE" className="relative h-full w-full rounded-full object-cover" />
+
   return (
-    <div className={`relative shrink-0 ${className}`}>
+    <div
+      className={`relative shrink-0 ${className}`}
+      style={{
+        perspective: 1000,
+        transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transition: 'transform 0.1s ease-out',
+        transformStyle: 'preserve-3d',
+      } as CSSProperties}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={resetTilt}
+    >
+      {!shine && logo}
+
+      {shine && <>
       {/* Halo, breathing with the sweep */}
       <motion.div
         aria-hidden
@@ -28,7 +54,7 @@ export function IsteMark({
         transition={{ duration: 10, delay, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      <img src="/iste-logo.png" alt="ISTE" className="relative h-full w-full rounded-full object-cover" />
+      {logo}
 
       {/* Specular sweep, left to right, clipped to the circle */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
@@ -60,6 +86,20 @@ export function IsteMark({
         style={{ boxShadow: 'inset 0 0 22px 2px rgba(255,255,255,.5)' }}
         animate={{ opacity: [0, 0, 0.9, 0, 0] }}
         transition={{ duration: 10, delay, times: [0, 0.18, 0.3, 0.5, 1], repeat: Infinity, ease: 'easeInOut' }}
+      />
+      </>}
+
+      {/* Pointer-driven reflection remains inert for touch and stylus input. */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+        animate={{ opacity: tilt.x || tilt.y ? 0.28 : 0, x: `${tilt.light - 50}%` }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        style={{
+          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,.85) 50%, transparent 70%)',
+          filter: 'blur(5px)',
+          mixBlendMode: 'screen',
+        }}
       />
     </div>
   )

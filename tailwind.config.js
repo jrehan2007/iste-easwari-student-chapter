@@ -12,9 +12,7 @@ export default {
       },
       fontFamily: {
         serif: ['"Times New Roman"', 'Times', 'serif'],
-        // Fraunces for headings and the dashboard — a serif with real character
-        // that still sits beside Times without clashing.
-        display: ['Fraunces', '"Cormorant Garamond"', '"Times New Roman"', 'serif'],
+        display: ['"Cormorant Garamond"', 'Fraunces', '"Times New Roman"', 'serif'],
       },
     },
   },
