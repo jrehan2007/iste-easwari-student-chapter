@@ -18,7 +18,7 @@ import Protected from './components/Protected'
 export default function App() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-  const bare = pathname.startsWith('/member')
+  const bare = pathname.startsWith('/member') || pathname === '/login'
   const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
   const showWatermark = watermarkRoutes.includes(pathname)
 
