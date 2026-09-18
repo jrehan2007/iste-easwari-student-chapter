@@ -21,6 +21,7 @@ drop table if exists membership_settings cascade;
 drop table if exists members            cascade;
 drop table if exists team_members       cascade;
 drop table if exists domains            cascade;
+drop table if exists tenures            cascade;
 drop table if exists admin_allowlist    cascade;
 drop table if exists profiles           cascade;
 
@@ -32,6 +33,8 @@ drop function if exists member_temp_login(text, text)  cascade;
 drop function if exists member_claim_available(text, text) cascade;
 drop function if exists member_claim_complete(text, uuid)  cascade;
 drop function if exists scan_pass(text)                cascade;
+drop function if exists set_current_tenure(uuid)       cascade;
+drop function if exists verify_member(text)             cascade;
 
 drop type if exists member_status cascade;
 drop type if exists event_status  cascade;

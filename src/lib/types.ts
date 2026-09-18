@@ -2,6 +2,14 @@ export type EventStatus = 'upcoming' | 'ongoing' | 'past'
 export type MemberStatus = 'pending' | 'active' | 'expired' | 'rejected'
 export type Lane = 'public' | 'membership'
 
+export interface Tenure {
+  id: string
+  label: string
+  start_date: string
+  end_date: string
+  is_current: boolean
+}
+
 export interface Domain {
   id: string
   name: string
@@ -13,6 +21,7 @@ export interface Domain {
 export interface TeamMember {
   id: string
   domain_id: string | null
+  tenure_id: string
   name: string
   role?: string | null
   is_head: boolean
@@ -103,6 +112,18 @@ export interface MemberRecord {
   account_claimed: boolean
 }
 
+export interface VerifiedMember {
+  full_name: string
+  reg_no: string
+  department?: string | null
+  section?: string | null
+  year?: string | null
+  photo_url?: string | null
+  member_code: string
+  valid_from?: string | null
+  valid_till?: string | null
+}
+
 export interface GalleryFolder { id: string; name: string; cover_url?: string }
 export interface GalleryPhoto { id: string; folder_id: string; photo_url: string; caption?: string }
 
@@ -110,6 +131,8 @@ export interface Announcement {
   id: string
   title: string
   body: string
+  is_active: boolean
+  display_order: number
   image_url?: string
   source?: 'chapter' | 'instagram'
   external_url?: string

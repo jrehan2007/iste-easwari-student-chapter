@@ -14,6 +14,7 @@ import Login from './pages/Login'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import MemberArea from './pages/member/MemberArea'
 import Protected from './components/Protected'
+import VerifyMember from './pages/VerifyMember'
 
 export default function App() {
   const { pathname } = useLocation()
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/membership" element={<Membership />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify/:memberCode" element={<VerifyMember />} />
           <Route path="/admin/*" element={<Protected role="admin"><AdminDashboard /></Protected>} />
           <Route path="/member/*" element={<Protected role="member"><MemberArea /></Protected>} />
           <Route path="*" element={

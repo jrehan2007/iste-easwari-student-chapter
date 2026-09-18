@@ -20,7 +20,7 @@ const sections: { id: Tab; label: string; icon: typeof CalendarDays }[] = [
   { id: 'certificates', label: 'Certificate Approvals', icon: Award },
   { id: 'settings',   label: 'Membership page',  icon: Settings2 },
   { id: 'roles',      label: 'Roles',           icon: Users },
-  { id: 'pinboard',   label: 'Pin board',       icon: Pin },
+  { id: 'pinboard',   label: 'Live Wire',       icon: Pin },
   { id: 'gallery',    label: 'Gallery',         icon: Images },
   { id: 'resources',  label: 'Archive',         icon: BookOpen },
   { id: 'quizzes',    label: 'Skill Zone',      icon: BrainCircuit },
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   const { email } = useAuth()
 
   return (
-    <div className="dark relative isolate min-h-screen overflow-hidden bg-night text-slate-100">
+    <div className="admin-dashboard dark relative isolate min-h-screen overflow-hidden bg-night text-slate-100">
       <DashboardVideoBackground />
       <div className="container-page relative z-10 py-10">
         <h1 className="section-title">Admin dashboard</h1>
@@ -371,16 +371,59 @@ function MembershipSettingsPanel() {
 function RolesPanel() {
   const domains = useAsync(() => api.listDomains(), [])
   const team = useAsync(() => api.listTeam(), [])
+  const tenures = useAsync(() => api.listTenures(), [])
   const { run, banner } = useSaver()
   const [dom, setDom] = useState({ name: '', tagline: '', description: '' })
-  const blank = { name: '', role: '', domain_id: '', year: '', department: '', bio: '', linkedin_url: '', is_head: false }
+  const blank = { id: '', name: '', role: '', domain_id: '', tenure_id: '', year: '', department: '', bio: '', linkedin_url: '', is_head: false }
   const [form, setForm] = useState(blank)
   const [photo, setPhoto] = useState<File | null>(null)
+  const tenureBlank = { id: '', label: '', start_date: '', end_date: '', is_current: false }
+  const [tenureForm, setTenureForm] = useState(tenureBlank)
 
   return (
     <Panel title="Roles"
       hint="Create a domain, then add its head and team. The head shows first on the public page.">
       {banner}
+
+      <div className="card space-y-4">
+        <div>
+          <h3 className="font-display text-lg font-semibold">Manage tenures</h3>
+          <p className="muted mt-1 text-sm">Create leadership periods before adding office bearers. Only one can be current.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <input className="field" placeholder="Label, e.g. 2026-27" value={tenureForm.label}
+            onChange={(e) => setTenureForm({ ...tenureForm, label: e.target.value })} />
+          <input className="field" type="date" value={tenureForm.start_date}
+            onChange={(e) => setTenureForm({ ...tenureForm, start_date: e.target.value })} />
+          <input className="field" type="date" value={tenureForm.end_date}
+            onChange={(e) => setTenureForm({ ...tenureForm, end_date: e.target.value })} />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={tenureForm.is_current} className="h-4 w-4 accent-[#C9A227]"
+              onChange={(e) => setTenureForm({ ...tenureForm, is_current: e.target.checked })} />
+            Make current
+          </label>
+          <button className="btn-primary sm:col-span-4" disabled={!tenureForm.label || !tenureForm.start_date || !tenureForm.end_date}
+            onClick={() => run(() => api.saveTenure(tenureForm), tenureForm.id ? 'Tenure updated.' : 'Tenure created.',
+              () => { setTenureForm(tenureBlank); tenures.reload(); team.reload() })}>
+            {tenureForm.id ? 'Save tenure' : 'Create tenure'}
+          </button>
+        </div>
+        {tenures.data?.length ? (
+          <Table head={['Tenure', 'Dates', 'Status', '']}>
+            {tenures.data.map((tenure) => (
+              <Row key={tenure.id}>
+                <td className="p-3 font-semibold">{tenure.label}</td>
+                <td className="p-3 muted">{tenure.start_date} to {tenure.end_date}</td>
+                <td className="p-3">{tenure.is_current ? 'Current' : <Action onClick={() => run(() => api.setCurrentTenure(tenure.id), 'Current tenure updated.', tenures.reload)}>Set current</Action>}</td>
+                <td className="space-x-3 p-3 text-right">
+                  <Action onClick={() => setTenureForm(tenure)}>Edit</Action>
+                  <Danger onClick={() => run(() => api.deleteTenure(tenure.id), 'Tenure deleted.', () => { tenures.reload(); team.reload() })}>Delete</Danger>
+                </td>
+              </Row>
+            ))}
+          </Table>
+        ) : <p className="muted text-sm">No tenures yet. Create one before adding office bearers.</p>}
+      </div>
 
       <div className="card grid gap-3 sm:grid-cols-3">
         <input className="field" placeholder="New domain name" value={dom.name}
@@ -404,6 +447,11 @@ function RolesPanel() {
           <option value="">Select domain…</option>
           {(domains.data ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
+        <select className="field" required value={form.tenure_id}
+          onChange={(e) => setForm({ ...form, tenure_id: e.target.value })}>
+          <option value="">Select tenure…</option>
+          {(tenures.data ?? []).map((tenure) => <option key={tenure.id} value={tenure.id}>{tenure.label}{tenure.is_current ? ' · Current' : ''}</option>)}
+        </select>
         <input className="field" placeholder="Role, e.g. Technical Head" value={form.role}
           onChange={(e) => setForm({ ...form, role: e.target.value })} />
         <input className="field" placeholder="Year, e.g. III Year" value={form.year}
@@ -423,22 +471,26 @@ function RolesPanel() {
             onChange={(e) => setForm({ ...form, is_head: e.target.checked })} />
           <span>This person heads the domain</span>
         </label>
-        <button className="btn-primary sm:col-span-2" disabled={!form.name || !form.domain_id}
-          onClick={() => run(() => api.saveTeamMember({ ...form, role: form.role || null } as never, photo),
-            'Added.', () => { setForm(blank); setPhoto(null); team.reload() })}>
-          Add to chapter
+        <button className="btn-primary sm:col-span-2" disabled={!form.name || !form.domain_id || !form.tenure_id || !tenures.data?.length}
+          onClick={() => run(() => api.saveTeamMember({ ...form, id: form.id || undefined, role: form.role || null } as never, photo),
+            form.id ? 'Updated.' : 'Added.', () => { setForm(blank); setPhoto(null); team.reload() })}>
+          {form.id ? 'Save changes' : 'Add to chapter'}
         </button>
       </div>
 
+      {!tenures.data?.length && <p className="text-sm text-gold-deep dark:text-gold-light">Create a tenure above before adding office bearers.</p>}
+
       {team.data?.length ? (
-        <Table head={['Name', 'Role', 'Domain', 'Head', '']}>
+        <Table head={['Name', 'Role', 'Tenure', 'Domain', 'Head', '']}>
           {team.data.map((m) => (
             <Row key={m.id}>
               <td className="p-3">{m.name}</td>
               <td className="p-3 muted">{m.role ?? '—'}</td>
+              <td className="p-3 muted">{tenures.data?.find((tenure) => tenure.id === m.tenure_id)?.label ?? '—'}</td>
               <td className="p-3 muted">{domains.data?.find((d) => d.id === m.domain_id)?.name ?? '—'}</td>
               <td className="p-3">{m.is_head ? 'Yes' : ''}</td>
               <td className="p-3 text-right">
+                <Action onClick={() => setForm({ ...m, role: m.role ?? '', domain_id: m.domain_id ?? '', tenure_id: m.tenure_id, year: m.year ?? '', department: m.department ?? '', bio: m.bio ?? '', linkedin_url: m.linkedin_url ?? '' })}>Edit</Action>{' '}
                 <Danger onClick={() => run(() => api.deleteTeamMember(m.id), 'Removed.', team.reload)}>Remove</Danger>
               </td>
             </Row>
@@ -453,33 +505,44 @@ function RolesPanel() {
 function PinPanel() {
   const { data, reload } = useAsync(() => api.listAnnouncements(), [])
   const { run, banner } = useSaver()
-  const blank = { title: '', body: '', external_url: '', source: 'chapter' as const }
-  const [form, setForm] = useState<Record<string, string>>(blank)
+  const blank = { id: '', body: '', is_active: true, display_order: 0 }
+  const [form, setForm] = useState(blank)
 
   return (
-    <Panel title="Pin board" hint="Posts appear on the home strip and the public pin board.">
+    <Panel title="Live Wire" hint="Active messages scroll across the public homepage and member dashboard.">
       {banner}
       <div className="card grid gap-3">
-        <input className="field" placeholder="Post title" value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })} />
-        <textarea className="field" rows={4} placeholder="What's the update?" value={form.body}
+        <textarea className="field sm:col-span-2" rows={3} placeholder="Announcement message" value={form.body}
           onChange={(e) => setForm({ ...form, body: e.target.value })} />
-        <input className="field" placeholder="Instagram post URL (optional)" value={form.external_url}
-          onChange={(e) => setForm({
-            ...form, external_url: e.target.value,
-            source: e.target.value ? 'instagram' : 'chapter',
-          })} />
-        <button className="btn-primary w-fit" disabled={!form.title}
-          onClick={() => run(() => api.createAnnouncement(form), 'Published.', () => { setForm(blank); reload() })}>
-          Publish post
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={form.is_active} className="h-4 w-4 accent-[#C9A227]"
+            onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+          Active on live tickers
+        </label>
+        <label className="flex items-center gap-2">
+          <span>Order</span>
+          <input className="field max-w-24" type="number" value={form.display_order}
+            onChange={(e) => setForm({ ...form, display_order: Number(e.target.value) })} />
+        </label>
+        <button className="btn-primary w-fit sm:col-span-2" disabled={!form.body.trim()}
+          onClick={() => run(() => api.saveAnnouncement({ ...form, title: form.body, source: 'chapter' }),
+            form.id ? 'Announcement updated.' : 'Announcement published.', () => { setForm(blank); reload() })}>
+          {form.id ? 'Save announcement' : 'Publish announcement'}
         </button>
       </div>
       {data?.length ? (
         <ul className="space-y-2">
           {data.map((a) => (
             <li key={a.id} className="flex items-center justify-between border border-turkish/20 p-3 dark:border-night-line">
-              <span>{a.title}</span>
-              <Danger onClick={() => run(() => api.deleteAnnouncement(a.id), 'Removed.', reload)}>Remove</Danger>
+              <span className="min-w-0 flex-1 truncate">{a.body || a.title}</span>
+              <span className="mx-3 text-sm muted">{a.is_active ? 'Active' : 'Inactive'} · #{a.display_order}</span>
+              <div className="flex gap-3">
+                <Action onClick={() => setForm({ id: a.id, body: a.body || a.title, is_active: a.is_active, display_order: a.display_order })}>Edit</Action>
+                <Action onClick={() => run(() => api.saveAnnouncement({ id: a.id, is_active: !a.is_active }), 'Status updated.', reload)}>
+                  {a.is_active ? 'Disable' : 'Enable'}
+                </Action>
+                <Danger onClick={() => run(() => api.deleteAnnouncement(a.id), 'Removed.', reload)}>Delete</Danger>
+              </div>
             </li>
           ))}
         </ul>

@@ -5,6 +5,7 @@ import IntroHero from '../components/IntroHero'
 import EmptyState from '../components/EmptyState'
 import { useAsync } from '../lib/useAsync'
 import { listAnnouncements, listEvents } from '../lib/api'
+import LiveTicker from '../components/LiveTicker'
 
 export default function Home() {
   const posts = useAsync(() => listAnnouncements(3), [])
@@ -17,6 +18,7 @@ export default function Home() {
   return (
     <>
       <IntroHero />
+      <LiveTicker />
 
       <motion.section
         ref={announcementsRef}
@@ -26,7 +28,7 @@ export default function Home() {
         className="container-page py-16"
       >
         <div className="flex items-end justify-between gap-4">
-          <h2 className="section-title">Preview &amp; announcements</h2>
+          <h2 className="section-title">Live Wire</h2>
           <Link to="/pin-board" className="text-turkish-dark hover:underline dark:text-turkish-light">Open the pin board</Link>
         </div>
         <div className="rule mt-4" />

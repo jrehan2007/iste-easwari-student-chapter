@@ -3,6 +3,7 @@ import type {
   Announcement, Certificate, ChapterEvent, Domain, EventPass, EventStatus,
   GalleryFolder, GalleryPhoto, Lane, MemberRecord, MembershipSettings, PendingCertificate,
   AnalyticsReport, Quiz, QuizAttempt, QuizQuestion, Resource, ScanResult, TeamMember,
+  Tenure, VerifiedMember,
 } from './types'
 
 /**
@@ -16,6 +17,11 @@ function guard() {
 
 const ok = <T,>(v: T) => (isSupabaseConfigured ? null : v)
 
+function nullableUuid(value: string | null | undefined) {
+  const normalized = value?.trim()
+  return normalized || null
+}
+
 // ---------------------------------------------------------------- storage
 export async function uploadFile(bucket: string, file: File) {
   guard()
@@ -25,7 +31,40 @@ export async function uploadFile(bucket: string, file: File) {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl
 }
 
-// ---------------------------------------------------------------- domains & team
+// ---------------------------------------------------------------- tenures, domains & team
+export async function listTenures() {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase.from('tenures').select('*')
+    .order('start_date', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Tenure[]
+}
+
+export async function saveTenure(row: Partial<Tenure>) {
+  guard()
+  const id = nullableUuid(row.id)
+  const { id: rawId, ...fields } = row
+  const payload = row.is_current ? { ...fields, is_current: false } : fields
+  const { data, error } = id
+    ? await supabase.from('tenures').update(payload).eq('id', id).select().single()
+    : await supabase.from('tenures').insert(payload).select().single()
+  if (error) throw error
+  if (row.is_current && data) await setCurrentTenure(data.id)
+  return data as Tenure
+}
+
+export async function setCurrentTenure(id: string) {
+  guard()
+  const { error } = await supabase.rpc('set_current_tenure', { p_tenure_id: id })
+  if (error) throw error
+}
+
+export async function deleteTenure(id: string) {
+  guard()
+  const { error } = await supabase.from('tenures').delete().eq('id', id)
+  if (error) throw error
+}
+
 export async function listDomains() {
   if (!isSupabaseConfigured) return []
   const { data, error } = await supabase.from('domains').select('*')
@@ -57,9 +96,16 @@ export async function listTeam() {
 export async function saveTeamMember(row: Partial<TeamMember>, photo?: File | null) {
   guard()
   const photo_url = photo ? await uploadFile('member-photos', photo) : row.photo_url
-  const payload = { ...row, photo_url }
-  const { error } = row.id
-    ? await supabase.from('team_members').update(payload).eq('id', row.id)
+  const { id: rawId, domain_id, tenure_id, ...fields } = row
+  const id = nullableUuid(rawId)
+  const payload = {
+    ...fields,
+    domain_id: nullableUuid(domain_id),
+    tenure_id: nullableUuid(tenure_id),
+    photo_url,
+  }
+  const { error } = id
+    ? await supabase.from('team_members').update(payload).eq('id', id)
     : await supabase.from('team_members').insert(payload)
   if (error) throw error
 }
@@ -292,6 +338,14 @@ export async function myMembership(profileId: string) {
   return (data ?? null) as MemberRecord | null
 }
 
+export async function verifyMember(memberCode: string) {
+  if (!isSupabaseConfigured) return null
+  const { data, error } = await supabase.rpc('verify_member', { p_member_code: memberCode })
+  if (error) throw error
+  const rows = (data ?? []) as VerifiedMember[]
+  return rows[0] ?? null
+}
+
 export async function updateMyProfile(id: string, patch: Partial<MemberRecord>, photo?: File | null) {
   guard()
   const photo_url = photo ? await uploadFile('member-photos', photo) : patch.photo_url
@@ -347,9 +401,34 @@ export async function listAnnouncements(limit?: number) {
   return (data ?? []) as Announcement[]
 }
 
+export async function listActiveAnnouncements() {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase.from('announcements').select('*')
+    .eq('is_active', true).order('display_order').order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Announcement[]
+}
+
 export async function createAnnouncement(row: Partial<Announcement>) {
   guard()
   const { error } = await supabase.from('announcements').insert(row)
+  if (error) throw error
+}
+
+export async function saveAnnouncement(row: Partial<Announcement>) {
+  guard()
+  const payload = {
+    title: row.title,
+    body: row.body,
+    image_url: row.image_url,
+    source: row.source,
+    external_url: row.external_url,
+    display_order: row.display_order,
+    is_active: row.is_active,
+  }
+  const { error } = row.id
+    ? await supabase.from('announcements').update(payload).eq('id', row.id)
+    : await supabase.from('announcements').insert(payload)
   if (error) throw error
 }
 

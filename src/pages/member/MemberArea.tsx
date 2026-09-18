@@ -8,8 +8,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
 import { supabase } from '../../lib/supabase'
-import { IsteMark } from '../../components/Logo'
+import { EaswariMark, IsteMark } from '../../components/Logo'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
+import LiveTicker from '../../components/LiveTicker'
 import type { MemberRecord } from '../../lib/types'
 
 type Tab = 'card' | 'events' | 'vault' | 'archive' | 'skill' | 'profile'
@@ -39,8 +40,8 @@ export default function MemberArea() {
   }, [intro])
 
   return (
-    <div className="dash member-shell relative isolate min-h-screen overflow-hidden text-white">
-      <DashboardVideoBackground src="/member-bg.mp4" />
+    <div className="member-portal member-shell relative isolate min-h-screen overflow-hidden text-white">
+      <DashboardVideoBackground src="/memberbg.mp4" />
       <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(55%_38%_at_50%_0%,rgba(201,162,39,0.16),transparent_72%)]" />
       {intro && (
         <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black"
@@ -77,6 +78,8 @@ export default function MemberArea() {
           </div>
         </div>
       </header>
+
+      <LiveTicker member />
 
       <div className="container-page relative z-10 grid gap-8 py-10 lg:grid-cols-[230px_1fr]">
         <nav className="flex gap-2 overflow-x-auto lg:flex-col">
@@ -130,9 +133,11 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (qr.current)
-      QRCode.toCanvas(qr.current, member.member_code, { width: 108, margin: 0,
+    if (qr.current) {
+      const verificationUrl = `${window.location.origin}/verify/${encodeURIComponent(member.member_code)}`
+      QRCode.toCanvas(qr.current, verificationUrl, { width: 108, margin: 0,
         color: { dark: '#111111', light: '#C9A227' } })
+    }
   }, [member.member_code])
 
   async function download() {
@@ -157,13 +162,16 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
       {/* 1.586:1, standard card ratio */}
       <div ref={card}
         className="member-panel member-card relative mt-7 w-full max-w-[560px] border-2 border-gold bg-gradient-to-br from-[#171106] via-[#0B0803] to-black p-6">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 h-56 w-20 rotate-45 bg-gradient-to-b from-gold-light/25 via-gold/10 to-transparent" />
+        <div aria-hidden className="pointer-events-none absolute inset-3 rounded-sm border border-gold/10" />
         {/* traceable watermark */}
         <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-5xl font-bold text-white/[0.035]">
           {member.member_code}
         </p>
 
         <div className="relative flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <EaswariMark className="h-8 w-[5.5rem]" plate />
             <IsteMark className="h-11 w-11" />
             <div className="leading-tight">
               <p className="dash text-sm font-semibold text-gold-light">ISTE Student Chapter</p>

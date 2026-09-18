@@ -27,6 +27,19 @@ create table if not exists admin_allowlist (
 );
 
 -- ---------------------------------------------------------------- leadership
+create table if not exists tenures (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  start_date date not null,
+  end_date date not null,
+  is_current boolean not null default false,
+  created_at timestamptz default now(),
+  constraint tenure_dates_valid check (end_date >= start_date)
+);
+
+create unique index if not exists one_current_tenure on tenures (is_current)
+  where is_current = true;
+
 create table if not exists domains (
   id uuid primary key default gen_random_uuid(),
   name text unique not null,
@@ -39,6 +52,7 @@ create table if not exists domains (
 create table if not exists team_members (
   id uuid primary key default gen_random_uuid(),
   domain_id uuid references domains on delete set null,
+  tenure_id uuid not null references tenures on delete cascade,
   name text not null,
   role text,
   is_head boolean default false,
@@ -155,6 +169,8 @@ create table if not exists announcements (
   image_url text,
   source text default 'chapter',
   external_url text,
+  display_order int not null default 0,
+  is_active boolean not null default true,
   created_at timestamptz default now()
 );
 
@@ -233,9 +249,33 @@ language sql stable security definer set search_path = public as $$
   select exists (select 1 from profiles where id = auth.uid() and role = 'admin');
 $$;
 
+create or replace function set_current_tenure(p_tenure_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'Admin access required'; end if;
+  update tenures set is_current = false where is_current = true;
+  update tenures set is_current = true where id = p_tenure_id;
+  if not found then raise exception 'Tenure not found'; end if;
+end;
+$$;
+
 create or replace function is_active_member() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from members where profile_id = auth.uid() and status = 'active');
+$$;
+
+create or replace function verify_member(p_member_code text)
+returns table (
+  full_name text, reg_no text, department text, section text, year text,
+  photo_url text, member_code text, valid_from date, valid_till date
+)
+language sql security definer set search_path = public as $$
+  select m.full_name, m.reg_no, m.department, m.section, m.year,
+         m.photo_url, m.member_code, m.valid_from, m.valid_till
+    from members m
+   where m.member_code = p_member_code
+     and m.status = 'active'
+     and (m.valid_till is null or m.valid_till >= current_date);
 $$;
 
 create or replace function handle_new_user() returns trigger
@@ -321,6 +361,7 @@ $$;
 grant execute on function member_temp_login(text, text)     to anon, authenticated;
 grant execute on function member_claim_complete(text, uuid) to authenticated;
 grant execute on function scan_pass(text)                   to authenticated;
+grant execute on function verify_member(text)               to anon, authenticated;
 
 -- =====================================================================
 -- Row level security
@@ -329,6 +370,7 @@ grant execute on function scan_pass(text)                   to authenticated;
 alter table profiles            enable row level security;
 alter table admin_allowlist     enable row level security;
 alter table domains             enable row level security;
+alter table tenures             enable row level security;
 alter table team_members        enable row level security;
 alter table members             enable row level security;
 alter table membership_settings enable row level security;
@@ -345,6 +387,7 @@ alter table quiz_questions      enable row level security;
 alter table quiz_attempts       enable row level security;
 
 create policy "read domains"   on domains      for select using (true);
+create policy "read tenures"   on tenures      for select using (true);
 create policy "read team"      on team_members for select using (true);
 create policy "read folders"   on gallery_folders for select using (true);
 create policy "read photos"    on gallery_photos  for select using (true);
@@ -358,6 +401,7 @@ create policy "read events by audience" on events for select using (
 );
 
 create policy "admins write domains"   on domains            for all using (is_admin()) with check (is_admin());
+create policy "admins write tenures"   on tenures            for all using (is_admin()) with check (is_admin());
 create policy "admins write team"      on team_members       for all using (is_admin()) with check (is_admin());
 create policy "admins write events"    on events             for all using (is_admin()) with check (is_admin());
 create policy "admins write folders"   on gallery_folders    for all using (is_admin()) with check (is_admin());

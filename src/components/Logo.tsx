@@ -109,7 +109,7 @@ export function IsteMark({
 export function EaswariMark({ className = 'h-11', plate = false }: { className?: string; plate?: boolean }) {
   return (
     <span className={`inline-flex items-center rounded-sm ${plate ? 'bg-white px-2 py-1' : 'bg-white px-2 py-1'}`}>
-      <img src="/easwari-logo.webp" alt="Easwari Engineering College" className={`${className} w-auto`} />
+      <img src="/easwari-logo.webp" alt="Easwari Engineering College" className={`${className} object-contain`} />
     </span>
   )
 }

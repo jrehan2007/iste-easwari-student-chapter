@@ -11,8 +11,11 @@ export default {
         gold: { DEFAULT: '#C9A227', light: '#E8CE72', deep: '#8C6D0F' },
       },
       fontFamily: {
-        serif: ['"Times New Roman"', 'Times', 'serif'],
-        display: ['"Cormorant Garamond"', 'Fraunces', '"Times New Roman"', 'serif'],
+        sans: ['var(--font-body)', 'sans-serif'],
+        serif: ['var(--font-display)', 'serif'],
+        display: ['var(--font-display)', 'serif'],
+        admin: ['var(--font-admin)', 'sans-serif'],
+        member: ['var(--font-member)', 'serif'],
       },
     },
   },

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Linkedin } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { useAsync } from '../lib/useAsync'
-import { listDomains, listTeam } from '../lib/api'
+import { listDomains, listTeam, listTenures } from '../lib/api'
 import type { Domain, TeamMember } from '../lib/types'
 
 function Portrait({ person, size }: { person: TeamMember; size: string }) {
@@ -25,37 +25,69 @@ function Portrait({ person, size }: { person: TeamMember; size: string }) {
 export default function Professional() {
   const domains = useAsync(() => listDomains(), [])
   const team = useAsync(() => listTeam(), [])
+  const tenures = useAsync(() => listTenures(), [])
   const [active, setActive] = useState<string | null>(null)
+  const [activeTenure, setActiveTenure] = useState<string | null>(null)
 
   useEffect(() => {
     if (!active && domains.data?.length) setActive(domains.data[0].id)
   }, [domains.data, active])
 
-  const all = team.data ?? []
+  useEffect(() => {
+    if (!activeTenure && tenures.data?.length) {
+      const current = tenures.data.find((tenure) => tenure.is_current) ?? tenures.data[0]
+      setActiveTenure(current.id)
+    }
+  }, [tenures.data, activeTenure])
+
+  const all = (team.data ?? []).filter((member) => member.tenure_id === activeTenure)
   const list = (domains.data ?? []) as Domain[]
+  const availableTenures = tenures.data ?? []
   const current = list.find((d) => d.id === active)
   const people = all.filter((m) => m.domain_id === active)
   const head = people.find((m) => m.is_head)
   const rest = people.filter((m) => !m.is_head)
 
-  if (domains.loading || team.loading)
+  if (domains.loading || team.loading || tenures.loading)
     return <div className="container-page py-24 muted">Loading…</div>
 
   if (!list.length)
     return (
       <div className="container-page py-14">
-        <h1 className="section-title">Professional</h1>
+        <h1 className="section-title">Office Bearers</h1>
         <EmptyState title="No domains yet" hint="Create them in the admin Roles panel, then add people to each." />
+      </div>
+    )
+
+  if (!availableTenures.length)
+    return (
+      <div className="container-page py-14">
+        <h1 className="section-title">Office Bearers</h1>
+        <EmptyState title="No tenures yet" hint="Office bearer records will appear here once an admin creates a tenure." />
       </div>
     )
 
   return (
     <div className="container-page py-14">
-      <h1 className="section-title">Professional</h1>
+      <h1 className="section-title">Office Bearers</h1>
       <p className="muted mt-3 max-w-2xl">
-        The chapter runs on its domains. Pick one to meet the people behind it.
+        Meet the chapter leadership for each tenure. Select a tenure and domain to explore the team.
       </p>
       <div className="rule mt-5" />
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <span className="font-display font-semibold">Tenure</span>
+        {availableTenures.map((tenure) => (
+          <button key={tenure.id} onClick={() => setActiveTenure(tenure.id)}
+            className={`rounded-sm border px-4 py-2 text-sm transition ${
+              tenure.id === activeTenure
+                ? 'border-gold bg-gold text-black'
+                : 'border-gold/40 text-gold-deep hover:bg-gold/10 dark:text-gold-light'
+            }`}>
+            {tenure.label}{tenure.is_current ? ' · Current' : ''}
+          </button>
+        ))}
+      </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[230px_1fr]">
         {/* Domain rail */}

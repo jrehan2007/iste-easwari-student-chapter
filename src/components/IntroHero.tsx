@@ -109,33 +109,36 @@ export default function IntroHero() {
 
       <HeroNetwork />
 
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 overflow-hidden text-center">
-        <span className="font-display whitespace-nowrap text-[34vw] font-bold leading-none tracking-[0.06em] text-ink/[0.07] dark:text-white/[0.07]">
+      <motion.div aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 text-center"
+        initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}>
+        <span className="hero-word-layer hero-iste-mark inline-block whitespace-nowrap text-[clamp(8rem,26vw,24rem)] font-bold leading-none tracking-[0.08em]">
           ISTE
         </span>
-      </div>
+      </motion.div>
 
       <div className="container-page relative z-10 grid items-center gap-10 py-20 md:grid-cols-2 md:py-28">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={!playing ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
-          transition={{ duration: 1.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="tracking-wide text-turkish-dark dark:text-turkish-light">Easwari Engineering College · Ramapuram</p>
           <h1 className="font-display mt-3 text-4xl leading-tight text-ink dark:text-white sm:text-5xl md:text-6xl">
             Indian Society for<br />Technical Education
           </h1>
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink/70 dark:text-white/70">
-            The student chapter that turns classroom engineering into built things — hackathons,
-            workshops, industry sessions and a community that keeps going after the certificate.
+          <p className="mt-5 max-w-lg text-lg leading-relaxed text-[#E8D9A0]">
+            The student chapter that turns classroom engineering into real-world projects — hackathons,
+            workshops, industry sessions and a community that continues beyond the certificate.
           </p>
           <p className="mt-4 text-sm tracking-[0.18em] text-gold-deep dark:text-gold-light">
             INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/events" className="btn-primary">See upcoming events</Link>
+            <Link to="/events" className="btn-primary hero-interactive">See upcoming events</Link>
             <Link to="/membership"
-              className="btn border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
+              className="btn hero-interactive border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
               Get membership
             </Link>
           </div>
@@ -146,9 +149,9 @@ export default function IntroHero() {
           className="flex justify-center md:justify-end"
           initial={{ scale: 1.35, opacity: 0, y: -30 }}
           animate={!playing ? { scale: 1, opacity: 1, y: 0 } : { scale: 1.35, opacity: 0, y: -30 }}
-          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.3, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="relative">
+          <div className="hero-logo-interactive relative">
             <div className="absolute -inset-8 rounded-full border border-ink/15 dark:border-white/15" />
             <div className="absolute -inset-16 rounded-full border border-ink/[0.07] dark:border-white/[0.07]" />
             <IsteMark shine delay={1.2} className="relative h-56 w-56 sm:h-72 sm:w-72 md:h-80 md:w-80" />
