@@ -266,16 +266,23 @@ $$;
 
 create or replace function verify_member(p_member_code text)
 returns table (
-  full_name text, reg_no text, department text, section text, year text,
-  photo_url text, member_code text, valid_from date, valid_till date
+  full_name text, email text, reg_no text, department text, section text, year text,
+  photo_url text, member_code text, status text, valid_from date, valid_till date
 )
-language sql security definer set search_path = public as $$
-  select m.full_name, m.reg_no, m.department, m.section, m.year,
-         m.photo_url, m.member_code, m.valid_from, m.valid_till
-    from members m
-   where m.member_code = p_member_code
-     and m.status = 'active'
-     and (m.valid_till is null or m.valid_till >= current_date);
+language plpgsql security definer set search_path = public as $$
+begin
+  return query
+  select 
+    m.full_name, m.email, m.reg_no, m.department, m.section, m.year,
+    m.photo_url, m.member_code, m.status::text, m.valid_from, m.valid_till
+  from members m
+  where lower(m.member_code) = lower(trim(p_member_code))
+     or (
+       p_member_code ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and m.id = p_member_code::uuid
+     )
+  limit 1;
+end;
 $$;
 
 create or replace function handle_new_user() returns trigger

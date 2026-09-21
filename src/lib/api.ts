@@ -2,8 +2,8 @@ import { supabase, isSupabaseConfigured } from './supabase'
 import type {
   Announcement, Certificate, ChapterEvent, Domain, EventPass, EventStatus,
   GalleryFolder, GalleryPhoto, Lane, MemberRecord, MembershipSettings, PendingCertificate,
-  AnalyticsReport, Quiz, QuizAttempt, QuizQuestion, Resource, ScanResult, TeamMember,
-  Tenure, VerifiedMember,
+  AnalyticsReport, MemberVerificationResult, Resource, ScanResult, TeamMember,
+  Tenure, VerificationStatus, VerifiedMember,
 } from './types'
 
 /**
@@ -338,12 +338,162 @@ export async function myMembership(profileId: string) {
   return (data ?? null) as MemberRecord | null
 }
 
-export async function verifyMember(memberCode: string) {
-  if (!isSupabaseConfigured) return null
-  const { data, error } = await supabase.rpc('verify_member', { p_member_code: memberCode })
-  if (error) throw error
-  const rows = (data ?? []) as VerifiedMember[]
-  return rows[0] ?? null
+export function generateVerificationId(seed?: string) {
+  const year = new Date().getFullYear()
+  const hash = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `VER-ISTE-${year}-${hash}`
+}
+
+export async function verifyMember(rawCodeOrId: string): Promise<MemberVerificationResult> {
+  const verifiedAt = new Date().toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+
+  const clean = (rawCodeOrId || '').trim()
+  if (!clean) {
+    return {
+      status: 'not_found',
+      verifiedAt,
+      verificationId: generateVerificationId('UNKNOWN'),
+    }
+  }
+
+  // Extract ID if a full URL was pasted/scanned (e.g. https://domain.com/verify/ISTE-EEC-2026-XXXX)
+  const code = clean.includes('/verify/') ? clean.split('/verify/').pop()?.split(/[?#]/)[0] || clean : clean
+  const verificationId = generateVerificationId(code)
+
+  // 1. First call the dedicated Backend Verification API (GET /api/members/verify/:memberId)
+  try {
+    const apiRes = await fetch(`/api/members/verify/${encodeURIComponent(code)}`, {
+      headers: { Accept: 'application/json' },
+    })
+
+    if (apiRes.ok) {
+      const payload = await apiRes.json()
+      if (payload.member) {
+        return {
+          status: payload.status as VerificationStatus,
+          fullName: payload.member.name,
+          email: payload.member.email,
+          memberId: payload.member.memberId,
+          membershipType: payload.member.membershipType || 'ISTE Student Chapter',
+          institution: payload.member.institution || 'Easwari Engineering College, Ramapuram',
+          department: payload.member.department,
+          section: payload.member.section,
+          year: payload.member.year,
+          regNo: payload.member.regNo,
+          photoUrl: payload.member.photoUrl || null,
+          validFrom: payload.member.validFrom || null,
+          validTill: payload.member.validUntil || null,
+          verifiedAt: payload.verifiedAt || verifiedAt,
+          verificationId: payload.verificationId || verificationId,
+        }
+      }
+    } else if (apiRes.status === 404) {
+      const payload = await apiRes.json().catch(() => ({}))
+      return {
+        status: 'not_found',
+        verifiedAt: payload.verifiedAt || verifiedAt,
+        verificationId: payload.verificationId || verificationId,
+      }
+    } else if (apiRes.status >= 500) {
+      return {
+        status: 'server_error',
+        verifiedAt,
+        verificationId,
+        error: 'Verification service error',
+      }
+    }
+  } catch {
+    // Network or offline, fallback to Supabase query if available
+  }
+
+  if (!isSupabaseConfigured) {
+    return {
+      status: 'not_found',
+      verifiedAt,
+      verificationId,
+      error: 'Database is not connected.',
+    }
+  }
+
+  try {
+    // 2. Direct query from members table (safely fetching only public verification fields)
+    let query = supabase
+      .from('members')
+      .select('id, full_name, email, member_code, reg_no, department, section, year, photo_url, status, valid_from, valid_till')
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code)
+    if (isUuid) {
+      query = query.or(`id.eq.${code},member_code.ilike.${code}`)
+    } else {
+      query = query.ilike('member_code', code)
+    }
+
+    const { data: member, error } = await query.maybeSingle()
+
+    // 3. If direct query returned error (e.g. RLS blockage), try RPC verify_member as fallback
+    let record = member as VerifiedMember | null
+    if (error || !record) {
+      const { data: rpcRows } = await supabase.rpc('verify_member', { p_member_code: code })
+      if (rpcRows && rpcRows.length > 0) {
+        record = rpcRows[0] as VerifiedMember
+      }
+    }
+
+    if (!record) {
+      return {
+        status: 'not_found',
+        verifiedAt,
+        verificationId,
+      }
+    }
+
+    // 4. Status and Expiration logic
+    const nowStr = new Date().toISOString().slice(0, 10)
+    const isExpired = Boolean((record.valid_till && record.valid_till < nowStr) || record.status === 'expired')
+    const isInactive = record.status === 'rejected' || record.status === 'pending' || record.status === 'inactive'
+
+    let status: VerificationStatus = 'active'
+    if (isInactive) {
+      status = 'inactive'
+    } else if (isExpired) {
+      status = 'expired'
+    } else if (record.status === 'active') {
+      status = 'active'
+    } else {
+      status = 'inactive'
+    }
+
+    return {
+      status,
+      fullName: record.full_name,
+      email: record.email ?? undefined,
+      memberId: record.member_code,
+      membershipType: 'ISTE Student Chapter',
+      institution: 'Easwari Engineering College, Ramapuram',
+      department: record.department ?? undefined,
+      section: record.section ?? undefined,
+      year: record.year ?? undefined,
+      regNo: record.reg_no ?? undefined,
+      photoUrl: record.photo_url ?? null,
+      validFrom: record.valid_from ?? null,
+      validTill: record.valid_till ?? null,
+      verifiedAt,
+      verificationId,
+    }
+  } catch {
+    return {
+      status: 'network_error',
+      verifiedAt,
+      verificationId,
+    }
+  }
 }
 
 export async function updateMyProfile(id: string, patch: Partial<MemberRecord>, photo?: File | null) {
@@ -515,69 +665,6 @@ export async function issueCertificate(row: {
   guard()
   const { error } = await supabase.from('certificates').insert(row)
   if (error) throw error
-}
-
-// ---------------------------------------------------------------- quizzes
-export async function listQuizzes() {
-  if (!isSupabaseConfigured) return []
-  const { data, error } = await supabase.from('quizzes').select('*').order('created_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as Quiz[]
-}
-
-export async function liveQuiz() {
-  if (!isSupabaseConfigured) return null
-  const { data } = await supabase.from('quizzes').select('*').eq('is_live', true)
-    .order('created_at', { ascending: false }).limit(1).maybeSingle()
-  return (data ?? null) as Quiz | null
-}
-
-export async function listQuestions(quizId: string) {
-  if (!isSupabaseConfigured) return []
-  const { data, error } = await supabase.from('quiz_questions').select('*')
-    .eq('quiz_id', quizId).order('sort_order')
-  if (error) throw error
-  return (data ?? []) as QuizQuestion[]
-}
-
-export async function createQuiz(row: Partial<Quiz>) {
-  guard()
-  const { data, error } = await supabase.from('quizzes').insert(row).select().single()
-  if (error) throw error
-  return data as Quiz
-}
-
-export async function setQuizLive(id: string, is_live: boolean) {
-  guard()
-  if (is_live) await supabase.from('quizzes').update({ is_live: false }).neq('id', id)
-  const { error } = await supabase.from('quizzes').update({ is_live }).eq('id', id)
-  if (error) throw error
-}
-
-export async function deleteQuiz(id: string) {
-  guard()
-  const { error } = await supabase.from('quizzes').delete().eq('id', id)
-  if (error) throw error
-}
-
-export async function addQuestion(row: Partial<QuizQuestion>) {
-  guard()
-  const { error } = await supabase.from('quiz_questions').insert(row)
-  if (error) throw error
-}
-
-export async function recordAttempt(row: { quiz_id: string; member_id: string; score: number; total: number }) {
-  guard()
-  const { error } = await supabase.from('quiz_attempts').insert(row)
-  if (error) throw error
-}
-
-export async function myAttempts(memberId: string) {
-  if (!isSupabaseConfigured) return []
-  const { data, error } = await supabase.from('quiz_attempts').select('*')
-    .eq('member_id', memberId).order('attempted_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as QuizAttempt[]
 }
 
 // ---------------------------------------------------------------- feedback

@@ -112,16 +112,41 @@ export interface MemberRecord {
   account_claimed: boolean
 }
 
+export type VerificationStatus = 'active' | 'expired' | 'inactive' | 'not_found' | 'server_error' | 'network_error'
+
 export interface VerifiedMember {
   full_name: string
-  reg_no: string
+  email?: string | null
+  reg_no?: string | null
   department?: string | null
   section?: string | null
   year?: string | null
   photo_url?: string | null
   member_code: string
+  status?: string | null
   valid_from?: string | null
   valid_till?: string | null
+  institution?: string | null
+  membership_type?: string | null
+}
+
+export interface MemberVerificationResult {
+  status: VerificationStatus
+  fullName?: string
+  email?: string | null
+  memberId?: string
+  membershipType?: string
+  institution?: string
+  department?: string
+  section?: string
+  year?: string
+  regNo?: string
+  photoUrl?: string | null
+  validFrom?: string | null
+  validTill?: string | null
+  verifiedAt: string
+  verificationId: string
+  error?: string
 }
 
 export interface GalleryFolder { id: string; name: string; cover_url?: string }
@@ -175,17 +200,4 @@ export interface AnalyticsReport {
   leaderboard: { memberId: string; memberName: string; count: number }[]
 }
 
-export interface Quiz { id: string; title: string; topic?: string; is_live: boolean }
-export interface QuizQuestion {
-  id: string
-  quiz_id: string
-  prompt: string
-  options: string[]
-  correct_index: number
-  explanation?: string
-  sort_order?: number
-}
-export interface QuizAttempt {
-  id: string; quiz_id: string; member_id: string
-  score: number; total: number; attempted_at: string
-}
+

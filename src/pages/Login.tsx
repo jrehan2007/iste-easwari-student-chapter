@@ -71,7 +71,7 @@ export default function Login() {
 
   if (stage === 'setPassword') {
     return (
-      <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#0A1220] px-5 py-10 text-white">
+      <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#0A1220] px-4 py-10 text-white sm:px-6 md:px-8">
         <img src="/iste-logo.png" alt="" aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(760px,125vw)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.06]" />
         <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#111C2E] p-6 shadow-2xl shadow-black/20 sm:p-8">
           <IsteMark shine className="h-12 w-12" />
@@ -96,7 +96,7 @@ export default function Login() {
   }
 
   return (
-    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#0A1220] px-5 py-10 text-white">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#0A1220] px-4 py-10 text-white sm:px-6 md:px-8">
       <img src="/iste-logo.png" alt="" aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(760px,125vw)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.06]" />
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#111C2E] p-6 shadow-2xl shadow-black/20 sm:p-8">
         <div className="mb-7">

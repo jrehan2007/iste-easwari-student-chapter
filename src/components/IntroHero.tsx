@@ -113,29 +113,29 @@ export default function IntroHero() {
         className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 text-center"
         initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}>
-        <span className="hero-word-layer hero-iste-mark inline-block whitespace-nowrap text-[clamp(8rem,26vw,24rem)] font-bold leading-none tracking-[0.08em]">
+        <span className="hero-word-layer hero-iste-mark inline-block whitespace-nowrap text-[clamp(6rem,20vw,18rem)] font-bold leading-none tracking-[0.08em] opacity-40">
           ISTE
         </span>
       </motion.div>
 
-      <div className="container-page relative z-10 grid items-center gap-10 py-20 md:grid-cols-2 md:py-28">
+      <div className="container-page relative z-10 grid items-center gap-8 py-8 sm:gap-10 sm:py-12 md:grid-cols-2 md:py-14 lg:gap-14 lg:py-16">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={!playing ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
           transition={{ duration: 1.1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="tracking-wide text-turkish-dark dark:text-turkish-light">Easwari Engineering College · Ramapuram</p>
-          <h1 className="font-display mt-3 text-4xl leading-tight text-ink dark:text-white sm:text-5xl md:text-6xl">
+          <p className="text-xs font-medium tracking-wide text-turkish-dark dark:text-turkish-light sm:text-sm">Easwari Engineering College · Ramapuram</p>
+          <h1 className="font-display mt-2 text-3xl font-bold leading-[1.12] text-ink dark:text-white sm:text-4xl lg:text-5xl">
             Indian Society for<br />Technical Education
           </h1>
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-[#E8D9A0]">
+          <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-[#E8D9A0] sm:mt-4 sm:text-base lg:text-lg">
             The student chapter that turns classroom engineering into real-world projects — hackathons,
             workshops, industry sessions and a community that continues beyond the certificate.
           </p>
-          <p className="mt-4 text-sm tracking-[0.18em] text-gold-deep dark:text-gold-light">
+          <p className="mt-2.5 text-xs font-semibold tracking-[0.16em] text-gold-deep dark:text-gold-light sm:mt-3">
             INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
             <Link to="/events" className="btn-primary hero-interactive">See upcoming events</Link>
             <Link to="/membership"
               className="btn hero-interactive border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
@@ -152,14 +152,14 @@ export default function IntroHero() {
           transition={{ duration: 1.3, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="hero-logo-interactive relative">
-            <div className="absolute -inset-8 rounded-full border border-ink/15 dark:border-white/15" />
-            <div className="absolute -inset-16 rounded-full border border-ink/[0.07] dark:border-white/[0.07]" />
-            <IsteMark shine delay={1.2} className="relative h-56 w-56 sm:h-72 sm:w-72 md:h-80 md:w-80" />
+            <div className="absolute -inset-5 rounded-full border border-ink/15 dark:border-white/15 sm:-inset-6 lg:-inset-8" />
+            <div className="absolute -inset-10 rounded-full border border-ink/[0.07] dark:border-white/[0.07] sm:-inset-12 lg:-inset-14" />
+            <IsteMark shine delay={1.2} className="relative h-44 w-44 sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-72 lg:w-72" />
           </div>
         </motion.div>
       </div>
 
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F5F7F8] dark:to-night" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-transparent to-[#F5F7F8] dark:to-night sm:h-16" />
     </section>
   )
 }

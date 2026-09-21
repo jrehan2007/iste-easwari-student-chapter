@@ -19,14 +19,14 @@ import VerifyMember from './pages/VerifyMember'
 export default function App() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-  const bare = pathname.startsWith('/member') || pathname === '/login'
+  const bare = pathname.startsWith('/member') || pathname === '/login' || pathname.startsWith('/verify')
   const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
   const showWatermark = watermarkRoutes.includes(pathname)
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen w-full flex-col overflow-x-clip">
       {!bare && <Header />}
-      <main className={`flex-1 ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
+      <main className={`flex-1 w-full ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/professional" element={<Professional />} />
@@ -37,7 +37,10 @@ export default function App() {
           <Route path="/membership" element={<Membership />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify/:verificationId" element={<VerifyMember />} />
+          <Route path="/verify/:memberId" element={<VerifyMember />} />
           <Route path="/verify/:memberCode" element={<VerifyMember />} />
+          <Route path="/verify" element={<VerifyMember />} />
           <Route path="/admin/*" element={<Protected role="admin"><AdminDashboard /></Protected>} />
           <Route path="/member/*" element={<Protected role="member"><MemberArea /></Protected>} />
           <Route path="*" element={

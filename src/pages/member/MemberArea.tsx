@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
-import { Award, BookOpen, BrainCircuit, IdCard, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards } from 'lucide-react'
+import { Award, BookOpen, IdCard, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
@@ -11,16 +11,16 @@ import { supabase } from '../../lib/supabase'
 import { EaswariMark, IsteMark } from '../../components/Logo'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 import LiveTicker from '../../components/LiveTicker'
+import { getMemberVerificationUrl } from '../../lib/url'
 import type { MemberRecord } from '../../lib/types'
 
-type Tab = 'card' | 'events' | 'vault' | 'archive' | 'skill' | 'profile'
+type Tab = 'card' | 'events' | 'vault' | 'archive' | 'profile'
 
 const tabs: { id: Tab; label: string; icon: typeof IdCard }[] = [
   { id: 'card',    label: 'Membership card', icon: IdCard },
   { id: 'events',  label: 'Priority events', icon: Ticket },
   { id: 'vault',   label: 'My Certificates',  icon: Award },
   { id: 'archive', label: 'Exclusive archive', icon: BookOpen },
-  { id: 'skill',   label: 'Skill Zone',      icon: BrainCircuit },
   { id: 'profile', label: 'Profile',         icon: Settings },
 ]
 
@@ -101,7 +101,6 @@ export default function MemberArea() {
                 {tab === 'events'  && <PriorityEvents />}
                 {tab === 'vault'   && <Vault memberId={member.id} />}
                 {tab === 'archive' && <Archive />}
-                {tab === 'skill'   && <SkillZone memberId={member.id} />}
                 {tab === 'profile' && <Profile member={member} email={email ?? ''} onSaved={reload} />}
               </>
             )}
@@ -142,7 +141,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
 
   useEffect(() => {
     if (qr.current) {
-      const verificationUrl = `${window.location.origin}/verify/${encodeURIComponent(member.member_code)}`
+      const verificationUrl = getMemberVerificationUrl(member.member_code)
       qrRender.current = QRCode.toCanvas(qr.current, verificationUrl, { width: 156, margin: 1,
         color: { dark: '#111111', light: '#F4E4BC' } }).then(() => undefined)
     }
@@ -152,7 +151,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
     setBusy(true)
     const exportWidth = 1024
     const exportHeight = 646
-    const verificationUrl = `${window.location.origin}/verify/${encodeURIComponent(member.member_code)}`
+    const verificationUrl = getMemberVerificationUrl(member.member_code)
 
     function text(value: string | undefined | null) {
       return (value ?? '—').replace(/[&<>"']/g, (character) => ({
@@ -318,6 +317,14 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" onClick={handleFlip} aria-pressed={flipped} className="inline-flex items-center gap-2 border border-gold bg-gold px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-gold-light"><WalletCards size={17} /> {flipped ? 'View Front' : 'Flip Card'}</button><button type="button" onClick={download} disabled={busy} className="inline-flex items-center gap-2 border border-gold/60 px-5 py-2.5 text-sm text-gold-light transition hover:bg-gold/10 disabled:opacity-50"><Download size={17} /> {busy ? 'Preparing PDF…' : 'Download Card'}</button><span className="text-xs text-white/45">PDF · front + QR back</span></div>
+        {import.meta.env.DEV && (
+          <p className="mt-2 text-[11px] text-gold-light/65">
+            <span className="font-semibold text-gold-light">Phone QR Target:</span>{' '}
+            <code className="rounded bg-black/50 border border-gold/20 px-1.5 py-0.5 text-gold-light font-mono text-[10px]">
+              {getMemberVerificationUrl(member.member_code)}
+            </code>
+          </p>
+        )}
       </div>
 
       <div className="mt-8 grid max-w-[900px] gap-px overflow-hidden border border-gold/25 bg-gold/25 sm:grid-cols-2 lg:grid-cols-4">{[[QrCode, 'Show QR', 'At the membership lane'], [TicketCheck, 'Event forms', 'Attach your card'], [WalletCards, 'Member perks', 'Unlock discounts'], [ShieldCheck, 'Valid till', validTill]].map(([Icon, title, text]) => { const ItemIcon = Icon as typeof QrCode; return <div key={title as string} className="bg-black/70 p-4"><ItemIcon size={18} className="text-gold-light" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-white">{title as string}</p><p className="mt-1 text-xs text-white/50">{text as string}</p></div> })}</div>
@@ -541,95 +548,6 @@ function Archive() {
           </section>
         )
       })}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------- Skill Zone
-function SkillZone({ memberId }: { memberId: string }) {
-  const quiz = useAsync(() => api.liveQuiz(), [])
-  const questions = useAsync(
-    () => (quiz.data ? api.listQuestions(quiz.data.id) : Promise.resolve([])), [quiz.data?.id])
-  const attempts = useAsync(() => api.myAttempts(memberId), [memberId])
-
-  const [answers, setAnswers] = useState<Record<string, number>>({})
-  const [done, setDone] = useState(false)
-
-  if (quiz.loading) return <p className="text-white/60">Loading…</p>
-
-  const qs = questions.data ?? []
-  const score = qs.filter((q) => answers[q.id] === q.correct_index).length
-
-  async function submit() {
-    setDone(true)
-    if (quiz.data) {
-      try {
-        await api.recordAttempt({ quiz_id: quiz.data.id, member_id: memberId, score, total: qs.length })
-        attempts.reload()
-      } catch { /* the score still shows even if recording fails */ }
-    }
-  }
-
-  return (
-    <div>
-      <h1 className="dash text-3xl font-semibold text-gold-light">Skill Zone</h1>
-      <p className="mt-2 text-white/60">Practice quizzes set by the chapter.</p>
-
-      {!quiz.data ? (
-        <p className="mt-6 text-white/50">No quiz is live right now. Check back soon.</p>
-      ) : (
-        <div className="member-panel mt-6 p-6">
-          <p className="text-sm text-white/50">{quiz.data.topic}</p>
-          <h2 className="dash mt-1 text-xl font-semibold">{quiz.data.title}</h2>
-
-          {qs.map((q, qi) => (
-            <div key={q.id} className="mt-6 border-t border-gold/20 pt-5 first:border-0 first:pt-0">
-              <p className="font-semibold">{qi + 1}. {q.prompt}</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {q.options.map((o, oi) => {
-                  const picked = answers[q.id] === oi
-                  const cls = !done
-                    ? picked ? 'border-gold bg-gold/15' : 'border-gold/30 hover:border-gold'
-                    : oi === q.correct_index ? 'border-gold bg-gold/15 text-gold-light'
-                    : picked ? 'border-red-500/60 text-red-300' : 'border-white/10 text-white/40'
-                  return (
-                    <button key={oi} disabled={done} onClick={() => setAnswers({ ...answers, [q.id]: oi })}
-                      className={`border p-3 text-left transition ${cls}`}>{o}</button>
-                  )
-                })}
-              </div>
-              {done && q.explanation && <p className="mt-2 text-sm text-white/65">{q.explanation}</p>}
-            </div>
-          ))}
-
-          {qs.length > 0 && (
-            done ? (
-              <p className="dash mt-6 text-xl font-semibold text-gold-light">
-                {score} out of {qs.length}
-              </p>
-            ) : (
-              <button onClick={submit} disabled={Object.keys(answers).length < qs.length}
-                className="mt-6 bg-gold px-5 py-2.5 text-black hover:bg-gold-light disabled:opacity-40">
-                Submit answers
-              </button>
-            )
-          )}
-        </div>
-      )}
-
-      {attempts.data?.length ? (
-        <>
-          <h2 className="dash mt-8 text-lg font-semibold">Your past attempts</h2>
-          <ul className="member-panel mt-3 divide-y divide-gold/20">
-            {attempts.data.map((a) => (
-              <li key={a.id} className="flex justify-between p-3 text-sm">
-                <span className="text-white/70">{new Date(a.attempted_at).toLocaleDateString('en-IN')}</span>
-                <span className="text-gold-light">{a.score} / {a.total}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
     </div>
   )
 }
