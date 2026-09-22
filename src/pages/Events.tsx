@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Clock, Building2, ArrowRight } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
@@ -98,7 +99,7 @@ export default function Events() {
                         '--event-scale': `${scale}`,
                         '--event-opacity': `${opacity}`,
                         zIndex: 40 - layerIndex,
-                      }}
+                      } as CSSProperties}
                     >
                       <div className={`event-card-inner ${isFlipped ? 'is-flipped' : ''}`}>
                         <div className="event-card-face event-card-front">
