@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { BadgeCheck } from 'lucide-react'
 import { useAsync } from '../lib/useAsync'
 import { verifyMember } from '../lib/api'
 import { EaswariMark, IsteMark } from '../components/Logo'
@@ -26,9 +27,17 @@ export default function VerifyMember() {
           <div className="flex items-center gap-3"><EaswariMark className="h-8 w-[5.5rem]" plate /><IsteMark className="h-11 w-11" /></div>
           <div className="text-right"><p className="font-display text-lg font-semibold text-gold-light">ISTE Easwari</p><p className="text-xs text-white/55">Member verification</p></div>
         </div>
-        <div className="mt-7 flex gap-5">
+        <div className="mt-7 flex flex-wrap gap-5 sm:flex-nowrap">
           {member.photo_url ? <img src={member.photo_url} alt={member.full_name} className="h-28 w-24 shrink-0 border border-gold/50 object-cover" /> : <div className="flex h-28 w-24 shrink-0 items-center justify-center border border-gold/50 text-2xl text-gold-light">{member.full_name.split(' ').map((word) => word[0]).slice(0, 2).join('')}</div>}
-          <div><p className="font-display text-2xl font-semibold text-gold-light">{member.full_name}</p><p className="mt-1 text-sm text-green-300">Valid ISTE Easwari member</p><p className="mt-3 text-sm text-white/65">Member ID: <span className="text-white">{member.member_code}</span></p></div>
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Member</p>
+            <p className="font-display break-words text-2xl font-semibold text-gold-light sm:text-3xl">{member.full_name}</p>
+            <p className="mt-2 flex items-start gap-1.5 text-sm font-semibold text-green-300">
+              <BadgeCheck size={17} className="mt-0.5 shrink-0" />
+              <span>Membership verified by ISTE Easwari Student Chapter.</span>
+            </p>
+            <p className="mt-3 text-sm text-white/65">Member ID: <span className="text-white">{member.member_code}</span></p>
+          </div>
         </div>
         <dl className="mt-7 grid grid-cols-2 gap-4 border-t border-gold/30 pt-5 text-sm">
           <div><dt className="text-white/45">Register no.</dt><dd>{member.reg_no}</dd></div><div><dt className="text-white/45">Department</dt><dd>{member.department ?? '—'}</dd></div>

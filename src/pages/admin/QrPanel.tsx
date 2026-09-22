@@ -295,6 +295,8 @@ function Scanner({ eventId, onScanned }: { eventId: string; onScanned: () => voi
             value={manual} onChange={(e) => setManual(e.target.value)} />
           <button className="btn-outline" disabled={!eventId || !manual}
             onClick={async () => {
+              setResult(null)
+              setError(null)
               try {
                 setResult(await api.checkInByEmail(eventId, manual))
                 setManual('')

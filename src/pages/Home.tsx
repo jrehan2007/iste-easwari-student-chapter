@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import IntroHero from '../components/IntroHero'
+import Hero from '../components/Hero'
 import EmptyState from '../components/EmptyState'
 import { useAsync } from '../lib/useAsync'
 import { listAnnouncements, listEvents } from '../lib/api'
@@ -10,15 +10,26 @@ import LiveTicker from '../components/LiveTicker'
 export default function Home() {
   const posts = useAsync(() => listAnnouncements(3), [])
   const upcoming = useAsync(() => listEvents('upcoming'), [])
+  const tickerRef = useRef<HTMLDivElement>(null)
+  const tickerVisible = useInView(tickerRef, { once: true, amount: 0.4 })
   const announcementsRef = useRef<HTMLElement>(null)
   const announcementsVisible = useInView(announcementsRef, { once: true, amount: 0.2 })
   const calendarRef = useRef<HTMLElement>(null)
   const calendarVisible = useInView(calendarRef, { once: true, amount: 0.2 })
 
+  // The hero fills the first screen; everything below it arrives as it scrolls in.
   return (
     <>
-      <IntroHero />
-      <LiveTicker />
+      <Hero />
+
+      <motion.div
+        ref={tickerRef}
+        initial={{ opacity: 0, y: 16 }}
+        animate={tickerVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <LiveTicker />
+      </motion.div>
 
       <motion.section
         ref={announcementsRef}
@@ -65,7 +76,7 @@ export default function Home() {
             : !upcoming.data?.length ? <EmptyState title="No upcoming events" hint="Add one from the admin dashboard." />
             : (
               <div className="mt-8 grid gap-5 md:grid-cols-2">
-                {upcoming.data.slice(0, 2).map((e) => (
+                {upcoming.data.slice(0, 4).map((e) => (
                   <article key={e.id} className="card">
                     <h3 className="text-2xl">{e.title}</h3>
                     <p className="muted mt-2">{e.description}</p>

@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -15,13 +15,22 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import MemberArea from './pages/member/MemberArea'
 import Protected from './components/Protected'
 import VerifyMember from './pages/VerifyMember'
+import IntroGate, { shouldPlayIntro } from './components/IntroGate'
 
 export default function App() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-  const bare = pathname.startsWith('/member') || pathname === '/login'
+
+  // The entry film plays on a bare screen: while it runs, neither the header,
+  // the ticker nor any page is mounted, so nothing can show through it.
+  const [introPlaying, setIntroPlaying] = useState(() => pathname === '/' && shouldPlayIntro())
+
+  // Matched precisely: '/membership' is a public page and must keep its chrome.
+  const bare = pathname === '/member' || pathname.startsWith('/member/') || pathname === '/login'
   const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
   const showWatermark = watermarkRoutes.includes(pathname)
+
+  if (introPlaying) return <IntroGate onDone={() => setIntroPlaying(false)} />
 
   return (
     <div className="flex min-h-screen flex-col">

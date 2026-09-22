@@ -43,13 +43,20 @@ body {
 
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 
-.hero-shell { background: #eaf1f4; }
+.hero-shell {
+  background: #eaf1f4;
+  /* Fills whatever the header leaves, so the hero is the whole first screen and
+     the ticker and sections below it are reached by scrolling. */
+  min-height: calc(100vh - var(--site-header-h, 9rem));
+}
+
+@supports (height: 100svh) {
+  .hero-shell { min-height: calc(100svh - var(--site-header-h, 9rem)); }
+}
+
 .dark .hero-shell { background: #050B1A; }
 .hero-gradient {
-  background: radial-gradient(120% 90% at 78% 28%, #d7edf2 0%, #eaf1f4 45%, #f5f7f8 100%);
-}
-.dark .hero-gradient {
-  background: radial-gradient(120% 90% at 78% 28%, #12304F 0%, #0A1B30 45%, #050B1A 100%);
+  background: transparent;
 }
 .hero-blue-accent { background-color: rgb(0 169 206 / 0.1); }
 .dark .hero-blue-accent { background-color: rgb(0 169 206 / 0.2); }
@@ -82,6 +89,46 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   filter: drop-shadow(0 0 18px rgb(201 162 39 / 0.3));
 }
 
+/**
+ * A diagonal band of light crosses the seal. It runs on the same ten-second
+ * cycle as the seal's own specular highlight (IsteMark, shine) and is offset to
+ * land with it, so the two read as one pass of light rather than two.
+ */
+.hero-emblem-shine {
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.hero-emblem-shine::after {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.18) 46%,
+    rgb(255 255 255 / 0.6) 50%,
+    rgb(255 255 255 / 0.18) 54%,
+    transparent 62%
+  );
+  mix-blend-mode: screen;
+  filter: blur(2px);
+  transform: translateX(-140%);
+  animation: hero-emblem-sweep 10s ease-in-out 1.8s infinite;
+}
+
+@keyframes hero-emblem-sweep {
+  0%        { transform: translateX(-140%); opacity: 0; }
+  4%        { opacity: 1; }
+  32%       { transform: translateX(140%); opacity: 1; }
+  38%, 100% { transform: translateX(140%); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-emblem-shine::after { animation: none; opacity: 0; }
+}
+
 .site-nav-link {
   border-radius: 0.25rem;
   transition: transform 220ms ease, color 220ms ease, box-shadow 220ms ease, text-decoration-color 220ms ease;
@@ -104,12 +151,43 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   box-shadow: 0 0 16px rgb(201 162 39 / 0.18);
 }
 
+/**
+ * Gold gradient fill with a black outline. Painting a stroke straight onto
+ * gradient-clipped text would cut into the gradient, so the outline is its own
+ * layer sitting directly behind an identical copy of the words.
+ */
 .header-chapter-title {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.header-chapter-title-stroke,
+.header-chapter-title-fill {
+  display: block;
+}
+
+.header-chapter-title-stroke {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  -webkit-text-stroke: 0.085em #000;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
+  user-select: none;
+}
+
+.header-chapter-title-fill {
+  position: relative;
   background: linear-gradient(105deg, #F4E4BC 0%, #C9A227 52%, #8B6914 100%);
   background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 14px rgb(201 162 39 / 0.2);
+  filter: drop-shadow(0 1px 6px rgb(201 162 39 / 0.25));
+}
+
+@media (max-width: 640px) {
+  .header-chapter-title-stroke { -webkit-text-stroke-width: 0.06em; }
 }
 
 .live-ticker {

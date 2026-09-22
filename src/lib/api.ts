@@ -233,13 +233,25 @@ export async function scanPass(token: string): Promise<ScanResult> {
   return data as ScanResult
 }
 
-/** Manual fallback when a camera fails or a pass won't scan. */
+/**
+ * Manual fallback when a camera fails or a pass won't scan.
+ *
+ * One email can legitimately hold more than one pass for the same event, so the
+ * query narrows to a single row before asking for one: the pass that hasn't been
+ * used yet, newest first. With nothing matching, the caller gets a plain message
+ * instead of a PostgREST "multiple (or no) rows returned" error.
+ */
 export async function checkInByEmail(eventId: string, email: string): Promise<ScanResult> {
   guard()
   const { data, error } = await supabase.from('event_passes').select('token')
-    .eq('event_id', eventId).ilike('leader_email', email.trim()).maybeSingle()
+    .eq('event_id', eventId)
+    .ilike('leader_email', email.trim())
+    .order('checked_in_at', { ascending: true, nullsFirst: true })
+    .order('issued_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
   if (error) throw error
-  if (!data) return { result: 'unknown' }
+  if (!data) throw new Error(`No pass found for this email (${email.trim()}).`)
   return scanPass(data.token)
 }
 
