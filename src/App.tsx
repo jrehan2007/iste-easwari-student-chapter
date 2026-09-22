@@ -20,22 +20,21 @@ import IntroGate, { shouldPlayIntro } from './components/IntroGate'
 export default function App() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-
   // The entry film plays on a bare screen: while it runs, neither the header,
   // the ticker nor any page is mounted, so nothing can show through it.
   const [introPlaying, setIntroPlaying] = useState(() => pathname === '/' && shouldPlayIntro())
 
   // Matched precisely: '/membership' is a public page and must keep its chrome.
-  const bare = pathname === '/member' || pathname.startsWith('/member/') || pathname === '/login'
+  const bare = pathname === '/member' || pathname.startsWith('/member/') || pathname === '/login' || pathname.startsWith('/verify')
   const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
   const showWatermark = watermarkRoutes.includes(pathname)
 
   if (introPlaying) return <IntroGate onDone={() => setIntroPlaying(false)} />
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen w-full flex-col overflow-x-clip">
       {!bare && <Header />}
-      <main className={`flex-1 ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
+      <main className={`flex-1 w-full ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/professional" element={<Professional />} />
@@ -47,6 +46,7 @@ export default function App() {
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/login" element={<Login />} />
           <Route path="/verify/:memberCode" element={<VerifyMember />} />
+          <Route path="/verify" element={<VerifyMember />} />
           <Route path="/admin/*" element={<Protected role="admin"><AdminDashboard /></Protected>} />
           <Route path="/member/*" element={<Protected role="member"><MemberArea /></Protected>} />
           <Route path="*" element={

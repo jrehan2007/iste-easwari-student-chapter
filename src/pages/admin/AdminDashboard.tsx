@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, BrainCircuit, Settings2, Award,
+  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, Settings2, Award,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
@@ -11,7 +11,7 @@ import type { Lane, MembershipSettings } from '../../lib/types'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 
 type Tab = 'events' | 'passes' | 'membership' | 'settings' | 'roles'
-         | 'pinboard' | 'gallery' | 'resources' | 'quizzes' | 'analytics' | 'certificates'
+         | 'pinboard' | 'gallery' | 'resources' | 'analytics' | 'certificates'
 
 const sections: { id: Tab; label: string; icon: typeof CalendarDays }[] = [
   { id: 'events',     label: 'Events',          icon: CalendarDays },
@@ -23,7 +23,6 @@ const sections: { id: Tab; label: string; icon: typeof CalendarDays }[] = [
   { id: 'pinboard',   label: 'Live Wire',       icon: Pin },
   { id: 'gallery',    label: 'Gallery',         icon: Images },
   { id: 'resources',  label: 'Archive',         icon: BookOpen },
-  { id: 'quizzes',    label: 'Skill Zone',      icon: BrainCircuit },
   { id: 'analytics',  label: 'Analytics',       icon: BarChart3 },
 ]
 
@@ -61,7 +60,6 @@ export default function AdminDashboard() {
             {tab === 'pinboard'   && <PinPanel />}
             {tab === 'gallery'    && <GalleryPanel />}
             {tab === 'resources'  && <ResourcesPanel />}
-            {tab === 'quizzes'    && <QuizPanel />}
             {tab === 'analytics'  && <AnalyticsPanel />}
           </section>
         </div>
@@ -630,92 +628,6 @@ function ResourcesPanel() {
           ))}
         </Table>
       ) : <p className="muted">Archive is empty.</p>}
-    </Panel>
-  )
-}
-
-// ---------------------------------------------------------------- Quizzes
-function QuizPanel() {
-  const quizzes = useAsync(() => api.listQuizzes(), [])
-  const { run, banner } = useSaver()
-  const [meta, setMeta] = useState({ title: '', topic: '' })
-  const [active, setActive] = useState<string>('')
-  const questions = useAsync(() => (active ? api.listQuestions(active) : Promise.resolve([])), [active])
-  const blankQ = { prompt: '', a: '', b: '', c: '', d: '', correct_index: 0, explanation: '' }
-  const [q, setQ] = useState(blankQ)
-
-  return (
-    <Panel title="Skill Zone" hint="Write a quiz, add questions, then set it live for members.">
-      {banner}
-      <div className="card flex flex-wrap items-end gap-3">
-        <input className="field max-w-xs" placeholder="Quiz title" value={meta.title}
-          onChange={(e) => setMeta({ ...meta, title: e.target.value })} />
-        <input className="field max-w-xs" placeholder="Topic" value={meta.topic}
-          onChange={(e) => setMeta({ ...meta, topic: e.target.value })} />
-        <button className="btn-primary" disabled={!meta.title}
-          onClick={() => run(async () => { const created = await api.createQuiz(meta); setActive(created.id) },
-            'Quiz created.', () => { setMeta({ title: '', topic: '' }); quizzes.reload() })}>
-          Create quiz
-        </button>
-      </div>
-
-      {quizzes.data?.length ? (
-        <Table head={['Quiz', 'Topic', 'Live', '']}>
-          {quizzes.data.map((z) => (
-            <Row key={z.id}>
-              <td className="p-3">
-                <button className="text-turkish-dark hover:underline dark:text-turkish-light"
-                  onClick={() => setActive(z.id)}>{z.title}</button>
-              </td>
-              <td className="p-3 muted">{z.topic ?? '—'}</td>
-              <td className="p-3">{z.is_live ? 'Live' : <span className="muted">Draft</span>}</td>
-              <td className="space-x-3 p-3 text-right">
-                <Action onClick={() => run(() => api.setQuizLive(z.id, !z.is_live),
-                  z.is_live ? 'Taken down.' : 'Now live.', quizzes.reload)}>
-                  {z.is_live ? 'Take down' : 'Set live'}
-                </Action>
-                <Danger onClick={() => run(() => api.deleteQuiz(z.id), 'Deleted.', quizzes.reload)}>Delete</Danger>
-              </td>
-            </Row>
-          ))}
-        </Table>
-      ) : <p className="muted">No quizzes yet.</p>}
-
-      {active && (
-        <div className="card grid gap-3">
-          <h3 className="font-display text-lg font-semibold">
-            Add a question to {quizzes.data?.find((z) => z.id === active)?.title}
-          </h3>
-          <textarea className="field" rows={2} placeholder="Question" value={q.prompt}
-            onChange={(e) => setQ({ ...q, prompt: e.target.value })} />
-          <div className="grid gap-2 sm:grid-cols-2">
-            {(['a', 'b', 'c', 'd'] as const).map((k, i) => (
-              <label key={k} className="flex items-center gap-2">
-                <input type="radio" name="correct" checked={q.correct_index === i} className="accent-[#00A9CE]"
-                  onChange={() => setQ({ ...q, correct_index: i })} />
-                <input className="field" placeholder={`Option ${k.toUpperCase()}`} value={q[k]}
-                  onChange={(e) => setQ({ ...q, [k]: e.target.value })} />
-              </label>
-            ))}
-          </div>
-          <p className="muted text-xs">Select the radio beside the correct option.</p>
-          <textarea className="field" rows={2} placeholder="Explanation shown after answering"
-            value={q.explanation} onChange={(e) => setQ({ ...q, explanation: e.target.value })} />
-          <button className="btn-primary w-fit" disabled={!q.prompt || !q.a}
-            onClick={() => run(() => api.addQuestion({
-              quiz_id: active, prompt: q.prompt, options: [q.a, q.b, q.c, q.d].filter(Boolean),
-              correct_index: q.correct_index, explanation: q.explanation,
-              sort_order: (questions.data?.length ?? 0) + 1,
-            }), 'Question added.', () => { setQ(blankQ); questions.reload() })}>
-            Add question
-          </button>
-          {questions.data?.length ? (
-            <ol className="muted list-decimal space-y-1 pl-5 text-sm">
-              {questions.data.map((qq) => <li key={qq.id}>{qq.prompt}</li>)}
-            </ol>
-          ) : null}
-        </div>
-      )}
     </Panel>
   )
 }
