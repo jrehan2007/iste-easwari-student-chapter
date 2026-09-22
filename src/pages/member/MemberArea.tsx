@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
-import { Award, BookOpen, IdCard, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards } from 'lucide-react'
+import { ArrowRight, Award, BookOpen, CalendarDays, IdCard, MapPin, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards, MoveHorizontal } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
@@ -334,41 +334,292 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
 }
 
 // ---------------------------------------------------------------- Events
+const demoPriorityEvents = [
+  {
+    id: 'demo-hack',
+    title: 'DUMMY HACK',
+    description: 'A campus technology sprint for builders and problem solvers.',
+    location: 'OAT',
+    venue: 'OAT',
+    starts_at: '2026-09-18T18:00:00.000Z',
+    ends_at: '2026-09-18T21:00:00.000Z',
+    status: 'upcoming',
+    member_discount_pct: 10,
+    member_opens_at: '2026-09-15T00:00:00.000Z',
+    public_opens_at: '2026-09-16T12:00:00.000Z',
+    google_form_url: 'https://example.com/register/dummy-hack',
+  },
+  {
+    id: 'demo-bugthon',
+    title: 'BUGTHON',
+    description: 'A debugging challenge that rewards precision and speed.',
+    location: 'GALLERY HALL',
+    venue: 'GALLERY HALL',
+    starts_at: '2026-09-21T17:30:00.000Z',
+    ends_at: '2026-09-21T20:30:00.000Z',
+    status: 'upcoming',
+    member_discount_pct: 10,
+    member_opens_at: '2026-09-18T00:00:00.000Z',
+    public_opens_at: '2026-09-19T12:00:00.000Z',
+    google_form_url: 'https://example.com/register/bugthon',
+  },
+  {
+    id: 'demo-codeverse',
+    title: 'CODEVERSE',
+    description: 'An elite coding arena built for enthusiasts and finalists.',
+    location: 'SEMINAR HALL',
+    venue: 'SEMINAR HALL',
+    starts_at: '2026-09-25T18:00:00.000Z',
+    ends_at: '2026-09-25T21:00:00.000Z',
+    status: 'upcoming',
+    member_discount_pct: 15,
+    member_opens_at: '2026-09-22T00:00:00.000Z',
+    public_opens_at: '2026-09-23T12:00:00.000Z',
+    google_form_url: 'https://example.com/register/codeverse',
+  },
+  {
+    id: 'demo-technova',
+    title: 'TECHNOVA',
+    description: 'Future-facing innovation, product thinking, and technical demos.',
+    location: 'AUDITORIUM',
+    venue: 'AUDITORIUM',
+    starts_at: '2026-09-28T18:30:00.000Z',
+    ends_at: '2026-09-28T22:00:00.000Z',
+    status: 'upcoming',
+    member_discount_pct: 20,
+    member_opens_at: '2026-09-25T00:00:00.000Z',
+    public_opens_at: '2026-09-26T12:00:00.000Z',
+    google_form_url: 'https://example.com/register/technova',
+  },
+  {
+    id: 'demo-ai-arena',
+    title: 'AI ARENA',
+    description: 'A showcase of AI prototyping, ethics, and real-world use cases.',
+    location: 'BLOCK A',
+    venue: 'BLOCK A',
+    starts_at: '2026-10-02T18:00:00.000Z',
+    ends_at: '2026-10-02T21:30:00.000Z',
+    status: 'upcoming',
+    member_discount_pct: 15,
+    member_opens_at: '2026-09-28T00:00:00.000Z',
+    public_opens_at: '2026-09-29T12:00:00.000Z',
+    google_form_url: 'https://example.com/register/ai-arena',
+  },
+]
+
 function PriorityEvents() {
   const { data, loading } = useAsync(() => api.listEvents('upcoming'), [])
-  const list = data ?? []
-  if (loading) return <p className="text-white/60">Loading…</p>
+  // TEMPORARY UI TEST DATA: keep the demo 5-card carousel visible while polishing the arc motion.
+  // Restore the live API by replacing this with `const list = (data ?? demoPriorityEvents) as ...` later.
+  const list = demoPriorityEvents as Awaited<ReturnType<typeof api.listEvents>>
+
+  if (loading && !data) return <p className="text-white/60">Loading…</p>
   if (!list.length) return <p className="text-white/60">No upcoming events yet.</p>
 
   return (
     <div>
       <h1 className="dash text-3xl font-semibold text-gold-light">Priority registration</h1>
       <p className="mt-2 text-white/60">These open to you before the public.</p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {list.map((e) => {
-          const early = e.public_opens_at && new Date(e.public_opens_at) > new Date()
-          return (
-            <article key={e.id} className="member-panel p-5">
-              {early && (
-                <p className="mb-2 text-xs uppercase tracking-widest text-gold-light">
-                  Members only — public from {new Date(e.public_opens_at!).toLocaleDateString('en-IN')}
-                </p>
-              )}
-              <h2 className="dash text-xl font-semibold">{e.title}</h2>
-              <p className="mt-2 text-sm text-white/60">
-                {e.venue} · {new Date(e.starts_at).toLocaleDateString('en-IN')}
-              </p>
-              {Boolean(e.member_discount_pct) && (
-                <p className="mt-3 text-gold-light">{e.member_discount_pct}% off your registration</p>
-              )}
-              <Link to={`/events/${e.id}/register`}
-                className="mt-4 inline-block bg-gold px-4 py-2 text-black hover:bg-gold-light">
-                Register now
-              </Link>
-            </article>
-          )
-        })}
+      <PriorityEventCarousel events={list} />
+    </div>
+  )
+}
+
+function PriorityEventCarousel({ events }: { events: Awaited<ReturnType<typeof api.listEvents>> }) {
+  const [activeIndex, setActiveIndex] = useState(1)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const dragStart = useRef(0)
+  const moved = useRef(false)
+  const pointerId = useRef<number | null>(null)
+
+  function move(direction: 1 | -1) {
+    if (!events.length) return
+    setActiveIndex((current) => (current + direction + events.length) % events.length)
+  }
+
+  function relativeIndex(index: number) {
+    if (!events.length) return 0
+    const distance = index - activeIndex
+    const wrapped = ((distance % events.length) + events.length) % events.length
+    if (wrapped > events.length / 2) return wrapped - events.length
+    return wrapped
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    pointerId.current = event.pointerId
+    dragStart.current = event.clientX
+    moved.current = false
+    setDragging(true)
+    event.preventDefault()
+    try { event.currentTarget.setPointerCapture(event.pointerId) } catch { }
+  }
+
+  function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!dragging || pointerId.current !== event.pointerId) return
+    const offset = event.clientX - dragStart.current
+    if (Math.abs(offset) > 8) moved.current = true
+    setDragOffset(offset)
+  }
+
+  function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (pointerId.current !== event.pointerId) return
+    const threshold = Math.min(120, Math.max(52, event.currentTarget.clientWidth * 0.12))
+    if (Math.abs(dragOffset) > threshold) {
+      move(dragOffset < 0 ? 1 : -1)
+    }
+    setDragOffset(0)
+    setDragging(false)
+    pointerId.current = null
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    } catch { }
+    window.setTimeout(() => { moved.current = false }, 0)
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1) }
+    if (event.key === 'ArrowRight') { event.preventDefault(); move(1) }
+  }
+
+  return (
+    <div
+      className={`priority-carousel mt-6 ${dragging ? 'is-dragging' : ''}`}
+      tabIndex={0}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Priority registration events"
+      onKeyDown={onKeyDown}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      <div className="priority-carousel-shell">
+        <button type="button" className="priority-carousel-arrow priority-carousel-arrow-left" onClick={() => move(-1)} aria-label="Previous event">
+          <span aria-hidden="true">‹</span>
+        </button>
+
+        <div className="priority-carousel-track">
+          {events.map((event, index) => {
+            const position = relativeIndex(index)
+            const isActive = position === 0
+            const early = event.public_opens_at && new Date(event.public_opens_at) > new Date()
+            const x = Number.isFinite(position) ? position * 210 + dragOffset * 0.46 : 0
+            const y = Number.isFinite(position) ? Math.abs(position) * 46 + (position === 0 ? 0 : 18) : 0
+            const rotation = Number.isFinite(position) ? position * 16 : 0
+            const scale = isActive ? 1 : position === 1 || position === -1 ? 0.84 : 0.7
+            const opacity = isActive ? 1 : position === 1 || position === -1 ? 0.85 : 0.55
+            const blur = isActive ? 0 : Math.abs(position) > 1 ? 0.4 : 0
+
+            const style = {
+              '--carousel-x': `${Number.isFinite(x) ? x : 0}px`,
+              '--carousel-y': `${Number.isFinite(y) ? y : 0}px`,
+              '--carousel-scale': `${Number.isFinite(scale) ? scale : 1}`,
+              '--carousel-rotate': `${Number.isFinite(rotation) ? rotation : 0}deg`,
+              '--carousel-opacity': `${Number.isFinite(opacity) ? opacity : 1}`,
+              '--carousel-blur': `${Number.isFinite(blur) ? blur : 0}px`,
+              zIndex: isActive ? 20 : Math.max(1, 12 - Math.abs(position)),
+            } as React.CSSProperties
+
+            const registrationHref = event.google_form_url || `/events/${event.id}/register`
+            const externalLink = /^https?:\/\//i.test(registrationHref)
+
+            return (
+              <article
+                key={event.id}
+                className={`priority-event-card ${isActive ? 'is-active' : ''}`}
+                style={style}
+                aria-hidden={!isActive}
+                onClick={(clickEvent) => {
+                  if (moved.current) {
+                    clickEvent.preventDefault()
+                    clickEvent.stopPropagation()
+                  }
+                }}
+              >
+                <div className="priority-event-card-inner">
+                  <div className="priority-event-card-top">
+                    <p className="priority-event-label">Priority access</p>
+                    {event.member_discount_pct ? (
+                      <span className="priority-event-badge">{event.member_discount_pct}% OFF</span>
+                    ) : null}
+                  </div>
+
+                  <h2 className="dash priority-event-title">{event.title}</h2>
+
+                  <div className="priority-event-meta">
+                    <p className="priority-event-detail"><CalendarDays size={15} className="priority-event-icon" />{new Date(event.starts_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    <p className="priority-event-detail"><MapPin size={15} className="priority-event-icon" />{event.venue}</p>
+                  </div>
+
+                  {early && (
+                    <p className="priority-event-note">Members first · public from {new Date(event.public_opens_at!).toLocaleDateString('en-IN')}</p>
+                  )}
+
+                  {externalLink ? (
+                    <a
+                      href={registrationHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      tabIndex={isActive ? 0 : -1}
+                      onClick={(clickEvent) => {
+                        if (moved.current) clickEvent.preventDefault()
+                      }}
+                      className="priority-register-button group"
+                    >
+                      Register now
+                      <ArrowRight size={16} className="priority-register-arrow" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={registrationHref}
+                      tabIndex={isActive ? 0 : -1}
+                      onClick={(clickEvent) => {
+                        if (moved.current) clickEvent.preventDefault()
+                      }}
+                      className="priority-register-button group"
+                    >
+                      Register now
+                      <ArrowRight size={16} className="priority-register-arrow" />
+                    </Link>
+                  )}
+                </div>
+              </article>
+            )
+          })}
+        </div>
+
+        <button type="button" className="priority-carousel-arrow priority-carousel-arrow-right" onClick={() => move(1)} aria-label="Next event">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
+
+      {events.length > 1 && (
+        <div className="priority-carousel-footer">
+          <div className="priority-carousel-dots" aria-label="Select an event">
+            {events.map((event, index) => (
+              <button
+                key={event.id}
+                type="button"
+                className={`priority-carousel-dot ${index === activeIndex ? 'is-active' : ''}`}
+                onClick={() => {
+                  const delta = (index - activeIndex + events.length) % events.length
+                  setActiveIndex((current) => (current + delta + events.length) % events.length)
+                }}
+                aria-label={`Go to ${event.title}`}
+                aria-pressed={index === activeIndex}
+              />
+            ))}
+          </div>
+
+          <div className="priority-carousel-hint" aria-live="polite">
+            <MoveHorizontal size={14} className="priority-carousel-hint-icon" />
+            <span>Drag to explore events</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
