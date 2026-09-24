@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+# Only the members' area: a bare "/member" rule would also block /membership
+Disallow: /member$
+Disallow: /member/
+Disallow: /login
+Disallow: /verify
+
+Sitemap: https://iste-easwari-student-chapter-melx.vercel.app/sitemap.xml
