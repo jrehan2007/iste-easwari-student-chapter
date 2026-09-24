@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Video, VideoOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { IsteMark } from './Logo'
 import HeroNetwork from './HeroNetwork'
+import Ferrofluid from './Ferrofluid'
+import { useTheme } from '../context/ThemeContext'
 
-type HeroBackgroundPreference = 'video' | 'static'
+// Module-level so each array keeps its identity: Ferrofluid rebuilds its WebGL
+// scene whenever a prop changes, and an inline literal would change every render.
+const FERROFLUID_COLORS_DARK = ['#0A1628', '#C9A227', '#0A1628']
+const FERROFLUID_COLORS_LIGHT = ['#F5F7FA', '#1B3A6B', '#C9A227']
 
-const HERO_BACKGROUND_PREFERENCE_KEY = 'hero-bg-preference'
+const MOBILE_QUERY = '(max-width: 767px)'
 
 /**
  * The opening panel of the home page.
@@ -20,70 +24,47 @@ const HERO_BACKGROUND_PREFERENCE_KEY = 'hero-bg-preference'
  * app, in IntroGate.
  */
 export default function Hero() {
-  const [backgroundPreference, setBackgroundPreference] = useState<HeroBackgroundPreference>(() => {
-    if (typeof window === 'undefined') return 'video'
-    try {
-      return window.localStorage.getItem(HERO_BACKGROUND_PREFERENCE_KEY) === 'static' ? 'static' : 'video'
-    } catch {
-      return 'video'
-    }
-  })
+  const isDark = useTheme().theme === 'dark'
   const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
+    typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches,
   )
 
-  const showingVideoBackground = backgroundPreference === 'video'
-  const videoCanPlay = showingVideoBackground && !isMobile
-
-  function toggleBackground() {
-    const nextPreference = showingVideoBackground ? 'static' : 'video'
-    setBackgroundPreference(nextPreference)
-    try {
-      window.localStorage.setItem(HERO_BACKGROUND_PREFERENCE_KEY, nextPreference)
-    } catch {
-      // Continue working if storage is unavailable.
-    }
-  }
-
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)')
+    const mediaQuery = window.matchMedia(MOBILE_QUERY)
     const updateViewport = () => setIsMobile(mediaQuery.matches)
     updateViewport()
     mediaQuery.addEventListener('change', updateViewport)
     return () => mediaQuery.removeEventListener('change', updateViewport)
   }, [])
 
-  return (
-    <section
-      className="hero-shell relative isolate flex items-center overflow-hidden bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: showingVideoBackground ? "url('/homepage-bg-poster.jpg')" : 'none' }}
-    >
-      <button
-        type="button"
-        onClick={toggleBackground}
-        aria-label={showingVideoBackground ? 'Use static hero background' : 'Use video hero background'}
-        title={showingVideoBackground ? 'Use static hero background' : 'Use video hero background'}
-        className="absolute right-4 top-4 z-20 rounded-full border border-white/30 bg-[#0A1628]/60 p-2.5 text-white backdrop-blur-sm transition hover:border-gold-light hover:text-gold-light sm:right-6 sm:top-6"
-      >
-        {showingVideoBackground ? <Video size={17} aria-hidden /> : <VideoOff size={17} aria-hidden />}
-      </button>
+  // The shader runs per pixel, so cap the backing resolution: 1x on phones,
+  // at most 1.5x elsewhere (the same cap HeroNetwork uses).
+  const ferrofluidDpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5)
 
-      {videoCanPlay && (
-        <video
-          aria-hidden
-          src="/homepage-bg.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          tabIndex={-1}
-          className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover"
+  return (
+    <section className="hero-shell relative isolate flex items-center overflow-hidden">
+      {/* Solid base under the canvas, since the fluid draws with transparency:
+          navy in dark mode, white in light mode. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-20 bg-white dark:bg-[#0A1628]">
+        <Ferrofluid
+          dpr={ferrofluidDpr}
+          colors={isDark ? FERROFLUID_COLORS_DARK : FERROFLUID_COLORS_LIGHT}
+          speed={0.5}
+          scale={1.6}
+          turbulence={1}
+          fluidity={0.1}
+          rimWidth={0.2}
+          sharpness={2.5}
+          shimmer={1.5}
+          glow={2}
+          flowDirection="down"
+          opacity={1}
+          mouseInteraction={!isMobile}
+          mouseStrength={1}
+          mouseRadius={0.35}
         />
-      )}
-      {showingVideoBackground && (
-        <div aria-hidden className="pointer-events-none absolute inset-0 z-[-5] bg-[rgba(10,22,40,0.55)]" />
-      )}
+      </div>
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-[-5] bg-[rgba(255,255,255,0.25)] dark:bg-[rgba(10,22,40,0.55)]" />
 
       {/* Deep navy field, matching the film's background so the handoff is seamless */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -115,7 +96,7 @@ export default function Hero() {
           <h1 className="font-display mt-3 text-4xl leading-tight text-ink dark:text-white sm:text-5xl md:text-6xl">
             Indian Society for<br />Technical Education
           </h1>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-[#E8D9A0] sm:mt-5 sm:text-lg">
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-ink/80 dark:text-[#E8D9A0] sm:mt-5 sm:text-lg">
             The student chapter that turns classroom engineering into real-world projects — hackathons,
             workshops, industry sessions and a community that continues beyond the certificate.
           </p>

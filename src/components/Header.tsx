@@ -83,8 +83,8 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="border-t border-ink/10 bg-[#DCEBF0] px-4 py-3 text-center dark:border-white/10 dark:bg-[#0E1E36] sm:py-4">
-        <h1 className="header-chapter-title font-display text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
+      <div className="border-t border-ink/10 bg-[#DCEBF0] px-4 py-2 text-center dark:border-white/10 dark:bg-[#0E1E36] sm:py-3">
+        <h1 className="header-chapter-title font-display text-xl font-semibold leading-tight sm:text-2xl md:text-3xl lg:text-4xl">
           {/* Two stacked layers: a black outline behind, the gold gradient on top */}
           <span aria-hidden className="header-chapter-title-stroke">ISTE – Easwari Student Chapter</span>
           <span className="header-chapter-title-fill">ISTE – Easwari Student Chapter</span>
