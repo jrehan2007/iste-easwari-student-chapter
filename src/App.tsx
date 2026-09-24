@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import CustomCursor from './components/CustomCursor'
 import Home from './pages/Home'
 import Professional from './pages/Professional'
 import Events from './pages/Events'
@@ -45,10 +46,11 @@ export default function App() {
   const watermarkRoutes = ['/professional', '/events', '/gallery', '/pin-board', '/membership', '/feedback']
   const showWatermark = watermarkRoutes.includes(pathname)
 
-  if (introPlaying) return <IntroGate onDone={() => setIntroPlaying(false)} />
+  if (introPlaying) return <><CustomCursor /><IntroGate onDone={() => setIntroPlaying(false)} /></>
 
   return (
     <div className="flex min-h-screen w-full flex-col">
+      <CustomCursor />
       {!bare && <Header />}
       <main className={`flex-1 w-full ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
         <Routes>

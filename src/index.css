@@ -704,8 +704,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   .member-card::after { animation: none; }
 }
 
-/* Events page cards: one even grid, dark-blue light running around the edges. */
+/* Glowing cards shared by Events (blue), Pin Board and Gallery (red): one even
+   grid, light running around the edges. The glow colour comes from --card-glow
+   (an "r g b" triple) and the hover edge from --card-edge. */
 .event-card {
+  --card-glow: var(--event-glow);
+  --card-edge: 96 165 250;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -713,25 +717,26 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   min-width: 0;
   overflow: hidden;
   border-radius: 20px;
-  border: 1px solid rgb(var(--event-glow) / 0.55);
+  border: 1px solid rgb(var(--card-glow) / 0.55);
   background: linear-gradient(155deg, #0b2545 0%, #071a33 58%, #06152a 100%);
   box-shadow:
-    0 0 0 1px rgb(var(--event-glow) / 0.18),
-    0 0 18px rgb(var(--event-glow) / 0.35),
-    0 0 42px rgb(var(--event-glow) / 0.14),
-    inset 0 0 18px rgb(var(--event-glow) / 0.12);
+    0 0 0 1px rgb(var(--card-glow) / 0.18),
+    0 0 18px rgb(var(--card-glow) / 0.35),
+    0 0 42px rgb(var(--card-glow) / 0.14),
+    inset 0 0 18px rgb(var(--card-glow) / 0.12);
   transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
 }
 
 .event-card:hover,
-.event-card:focus-within {
+.event-card:focus-within,
+.event-card:focus-visible {
   transform: translateY(-4px);
-  border-color: rgb(96 165 250 / 0.9);
+  border-color: rgb(var(--card-edge) / 0.9);
   box-shadow:
-    0 0 0 1px rgb(var(--event-glow) / 0.35),
-    0 0 26px rgb(var(--event-glow) / 0.55),
-    0 0 64px rgb(var(--event-glow) / 0.25),
-    inset 0 0 22px rgb(var(--event-glow) / 0.18);
+    0 0 0 1px rgb(var(--card-glow) / 0.35),
+    0 0 26px rgb(var(--card-glow) / 0.55),
+    0 0 64px rgb(var(--card-glow) / 0.25),
+    inset 0 0 22px rgb(var(--card-glow) / 0.18);
 }
 
 .event-card-banner {
@@ -741,8 +746,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   justify-content: center;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(var(--event-glow) / 0.18), rgba(7, 26, 51, 0.94));
-  border-bottom: 1px solid rgb(var(--event-glow) / 0.35);
+  background: linear-gradient(180deg, rgb(var(--card-glow) / 0.18), rgba(7, 26, 51, 0.94));
+  border-bottom: 1px solid rgb(var(--card-glow) / 0.35);
 }
 
 .event-card-image {
@@ -852,7 +857,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 }
 
 .event-card-note {
-  border-top: 1px solid rgb(var(--event-glow) / 0.3);
+  border-top: 1px solid rgb(var(--card-glow) / 0.3);
   padding-top: 0.8rem;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
@@ -863,6 +868,135 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .event-card { transition: none; }
   .event-card:hover, .event-card:focus-within { transform: none; }
+}
+
+/* Red variant for the Pin Board and Gallery */
+.card-glow-red {
+  --card-glow: 220 38 38;
+  --card-edge: 248 113 113;
+}
+
+/* Cards that are one big button (gallery albums) */
+button.event-card { width: 100%; padding: 0; text-align: left; cursor: pointer; }
+.event-card:focus-visible { outline: 2px solid rgb(var(--card-edge)); outline-offset: 3px; }
+
+/* Pin Board posts are read in full, so no line limits */
+.event-card-title.is-full,
+.event-card-copy.is-full { display: block; -webkit-line-clamp: unset; overflow: visible; }
+
+/* Gallery photos: a thin frame of the same red light */
+.photo-tile {
+  display: block;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgb(220 38 38 / 0.5);
+  background: #06152a;
+  box-shadow: 0 0 12px rgb(220 38 38 / 0.28), 0 0 28px rgb(220 38 38 / 0.1);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+.photo-tile:hover,
+.photo-tile:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgb(248 113 113 / 0.9);
+  box-shadow: 0 0 20px rgb(220 38 38 / 0.5), 0 0 44px rgb(220 38 38 / 0.2);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-tile { transition: none; }
+  .photo-tile:hover, .photo-tile:focus-visible { transform: none; }
+}
+
+/* ---- Round cursor (CustomCursor) — mouse devices only ---- */
+html.has-custom-cursor,
+html.has-custom-cursor * { cursor: none !important; }
+/* Text boxes keep the normal I-beam; the round cursor steps aside there */
+html.has-custom-cursor :is(input:not([type='checkbox']):not([type='radio']):not([type='button']):not([type='submit']):not([type='range']):not([type='file']), textarea, [contenteditable='true']) {
+  cursor: text !important;
+}
+
+.custom-cursor-dot,
+.custom-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 200ms ease, width 200ms ease, height 200ms ease, background-color 200ms ease, border-color 200ms ease;
+}
+.custom-cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--hero-gold);
+  box-shadow: 0 0 6px rgb(201 162 39 / 0.7);
+}
+.custom-cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgb(201 162 39 / 0.85);
+  box-shadow: 0 0 10px rgb(201 162 39 / 0.25);
+}
+.custom-cursor-dot.is-visible,
+.custom-cursor-ring.is-visible { opacity: 1; }
+/* Over something clickable: the ring widens and fills softly */
+.custom-cursor-ring.is-hover {
+  width: 52px;
+  height: 52px;
+  border-color: rgb(232 206 114 / 0.95);
+  background-color: rgb(201 162 39 / 0.12);
+}
+.custom-cursor-dot.is-hover { width: 6px; height: 6px; }
+/* Button held down */
+.custom-cursor-ring.is-down { width: 26px; height: 26px; background-color: rgb(201 162 39 / 0.22); }
+/* Typing: hide the round cursor, the I-beam takes over */
+.custom-cursor-dot.is-text,
+.custom-cursor-ring.is-text { opacity: 0; }
+
+/* ---- Office bearer photos: enlarge on hover (mouse) or tap (touch) ---- */
+.portrait-zoom {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 0.125rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.portrait-zoom img {
+  position: relative;
+  /* Grow from the left edge, into the card, so it never runs off a phone screen */
+  transform-origin: left center;
+  transition: transform 320ms cubic-bezier(.22, 1, .36, 1), box-shadow 320ms ease;
+  will-change: transform;
+}
+.portrait-zoom.is-zoomed,
+.portrait-zoom:focus-visible { z-index: 30; }
+.portrait-zoom.is-zoomed img,
+.portrait-zoom:focus-visible img {
+  transform: scale(var(--portrait-zoom, 1.9));
+  box-shadow: 0 0 0 2px var(--hero-gold), 0 14px 40px rgb(0 0 0 / 0.45);
+}
+.portrait-zoom:focus-visible { outline: none; }
+@media (hover: hover) and (pointer: fine) {
+  .portrait-zoom:hover { z-index: 30; }
+  .portrait-zoom:hover img {
+    transform: scale(var(--portrait-zoom, 1.9));
+    box-shadow: 0 0 0 2px var(--hero-gold), 0 14px 40px rgb(0 0 0 / 0.45);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portrait-zoom img { transition: none; }
+}
+
+/* iOS zooms the whole page when a text box under 16px is focused; keep them at
+   16px on phone-width screens so tapping a field doesn't zoom the layout. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea { font-size: 16px; }
 }
 
 @layer components {

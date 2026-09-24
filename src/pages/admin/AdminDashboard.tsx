@@ -1588,8 +1588,8 @@ function PinPanel() {
       {data?.length ? (
         <ul className="space-y-2">
           {data.map((a) => (
-            <li key={a.id} className="flex items-center justify-between border border-turkish/20 p-3 dark:border-night-line">
-              <span className="min-w-0 flex-1 truncate">{a.body || a.title}</span>
+            <li key={a.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border border-turkish/20 p-3 dark:border-night-line">
+              <span className="min-w-0 flex-1 basis-40 truncate">{a.body || a.title}</span>
               {a.external_url && (
                 <a href={a.external_url} target="_blank" rel="noreferrer" title={a.external_url} aria-label="Open the attached link"
                   className="ml-3 shrink-0 text-turkish-dark hover:text-turkish dark:text-turkish-light">

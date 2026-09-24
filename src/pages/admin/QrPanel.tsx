@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
-import { Html5Qrcode } from 'html5-qrcode'
 import { Camera, CameraOff, Download } from 'lucide-react'
 import { Panel, Table, Row, Danger, useSaver } from './panels'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
+import { useQrScanner } from '../../lib/useQrScanner'
 import type { EventPass, Lane, ScanResult } from '../../lib/types'
 
 /** One printable pass card with its QR. The QR encodes the token only. */
@@ -27,7 +27,7 @@ function PassCard({ pass, eventTitle, venue, when }: {
   }
 
   return (
-    <article className="flex gap-4 border border-turkish/30 bg-white p-4 dark:border-night-line dark:bg-night-soft">
+    <article className="flex flex-col gap-4 border border-turkish/30 bg-white p-4 dark:border-night-line dark:bg-night-soft min-[420px]:flex-row">
       <div className="min-w-0 flex-1">
         <p className="text-xs uppercase tracking-widest text-turkish-dark dark:text-turkish-light">
           {pass.lane === 'membership' ? 'Membership lane' : 'Public lane'}
@@ -138,7 +138,7 @@ export default function QrPanel() {
 
       {(passes.data?.length ?? 0) > 0 && (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-display text-lg font-semibold">
               Issued passes — {passes.data!.filter((p) => p.checked_in_at).length} of {passes.data!.length} checked in
             </h3>
@@ -204,35 +204,19 @@ function Scanner({ eventId, onScanned }: { eventId: string; onScanned: () => voi
   const [result, setResult] = useState<ScanResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [manual, setManual] = useState('')
-  const scannerRef = useRef<Html5Qrcode | null>(null)
   const lastToken = useRef<string>('')
 
-  useEffect(() => {
-    if (!on) return
-    const el = document.getElementById('scanner-view')
-    if (!el) return
-
-    const scanner = new Html5Qrcode('scanner-view')
-    scannerRef.current = scanner
-
-    scanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 240, height: 240 } },
-      async (token) => {
-        // The camera fires continuously; ignore repeats of the same code.
-        if (token === lastToken.current) return
-        lastToken.current = token
-        window.setTimeout(() => { lastToken.current = '' }, 2500)
-        try {
-          setResult(await api.scanPass(token))
-          onScanned()
-        } catch (e) { setError((e as Error).message) }
-      },
-      () => {}
-    ).catch((e) => { setError(e.message ?? String(e)); setOn(false) })
-
-    return () => { scanner.stop().then(() => scanner.clear()).catch(() => {}) }
-  }, [on, onScanned])
+  const camera = useQrScanner('scanner-view', on, async (token) => {
+    // The camera fires continuously; ignore repeats of the same code.
+    if (token === lastToken.current) return
+    lastToken.current = token
+    window.setTimeout(() => { lastToken.current = '' }, 2500)
+    try {
+      setResult(await api.scanPass(token))
+      onScanned()
+    } catch (e) { setError((e as Error).message) }
+  })
+  const cameraError = camera.error ?? error
 
   const tone = {
     valid:     'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100',
@@ -250,13 +234,14 @@ function Scanner({ eventId, onScanned }: { eventId: string; onScanned: () => voi
           <p className="muted text-sm">Point the camera at a pass. Camera access needs HTTPS, so use the deployed site.</p>
         </div>
         <button onClick={() => { setOn(!on); setResult(null); setError(null) }}
-          className={on ? 'btn-outline' : 'btn-primary'}>
+          className={`${on ? 'btn-outline' : 'btn-primary'} w-full sm:w-auto`}>
           {on ? <><CameraOff size={18} /> Stop</> : <><Camera size={18} /> Start scanning</>}
         </button>
       </div>
 
-      {on && <div id="scanner-view" className="mx-auto mt-4 w-full max-w-sm overflow-hidden rounded-sm" />}
-      {error && <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>}
+      {on && <div id="scanner-view" className="mx-auto mt-4 w-full max-w-sm overflow-hidden rounded-sm bg-black" />}
+      {on && camera.starting && <p className="muted mt-2 text-center text-sm">Starting camera…</p>}
+      {cameraError && <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">{cameraError}</p>}
 
       {result && (
         <div className={`mt-4 border-l-4 p-4 ${tone[result.result]}`}>
@@ -290,8 +275,8 @@ function Scanner({ eventId, onScanned }: { eventId: string; onScanned: () => voi
 
       <div className="mt-4 border-t border-turkish/20 pt-4 dark:border-night-line">
         <p className="muted text-sm">Camera not working? Check someone in by their email.</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <input className="field max-w-xs" placeholder="Team leader email"
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <input className="field sm:max-w-xs" type="email" inputMode="email" autoComplete="off" placeholder="Team leader email"
             value={manual} onChange={(e) => setManual(e.target.value)} />
           <button className="btn-outline" disabled={!eventId || !manual}
             onClick={async () => {

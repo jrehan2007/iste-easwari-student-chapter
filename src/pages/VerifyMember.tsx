@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ShieldCheck, ShieldAlert, ShieldX, CheckCircle2, Copy, Check,
   Camera, CameraOff, Search, ArrowLeft, RefreshCw, ExternalLink
 } from 'lucide-react'
-import { Html5Qrcode } from 'html5-qrcode'
 import { verifyMember } from '../lib/api'
+import { useQrScanner } from '../lib/useQrScanner'
 import { EaswariMark, IsteMark } from '../components/Logo'
 import type { MemberVerificationResult } from '../lib/types'
 
@@ -20,8 +20,6 @@ export default function VerifyMember() {
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [inputCode, setInputCode] = useState('')
   const [cameraActive, setCameraActive] = useState(false)
-  const [cameraError, setCameraError] = useState<string | null>(null)
-  const scannerRef = useRef<Html5Qrcode | null>(null)
 
   // Run backend verification whenever rawId changes
   useEffect(() => {
@@ -58,43 +56,18 @@ export default function VerifyMember() {
     }
   }, [rawId])
 
-  // Camera QR scanner handler
-  useEffect(() => {
-    if (!cameraActive) return
-    const el = document.getElementById('verify-camera-box')
-    if (!el) return
-
-    const scanner = new Html5Qrcode('verify-camera-box')
-    scannerRef.current = scanner
-
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => {
-          let code = decodedText.trim()
-          if (code.includes('/verify/')) {
-            code = code.split('/verify/').pop()?.split(/[?#]/)[0] || code
-          }
-          scanner.stop().then(() => scanner.clear()).catch(() => {})
-          setCameraActive(false)
-          setShowSearchModal(false)
-          navigate(`/verify/${encodeURIComponent(code)}`)
-        },
-        () => {}
-      )
-      .catch((err) => {
-        setCameraError(err?.message || 'Could not access camera for scanning.')
-        setCameraActive(false)
-      })
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-        scannerRef.current = null
-      }
+  // Camera QR scanner: turning cameraActive off stops the camera.
+  const camera = useQrScanner('verify-camera-box', cameraActive, (decodedText) => {
+    let code = decodedText.trim()
+    if (code.includes('/verify/')) {
+      code = code.split('/verify/').pop()?.split(/[?#]/)[0] || code
     }
-  }, [cameraActive, navigate])
+    setCameraActive(false)
+    setShowSearchModal(false)
+    navigate(`/verify/${encodeURIComponent(code)}`)
+  })
+  // If the camera can't start, go back to the "Scan QR" button and show why.
+  useEffect(() => { if (camera.error) setCameraActive(false) }, [camera.error])
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text)
@@ -111,10 +84,7 @@ export default function VerifyMember() {
     }
     setShowSearchModal(false)
     setInputCode('')
-    if (cameraActive && scannerRef.current) {
-      scannerRef.current.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-      setCameraActive(false)
-    }
+    setCameraActive(false)
     navigate(`/verify/${encodeURIComponent(code)}`)
   }
 
@@ -520,16 +490,13 @@ export default function VerifyMember() {
       {/* Verify Another Modal / Scanner */}
       {showSearchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-gold/40 bg-[#0E1524] p-6 shadow-2xl sm:p-7">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-gold/40 bg-[#0E1524] p-5 shadow-2xl sm:p-7">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-semibold text-gold-light">Verify Membership</h3>
               <button
                 onClick={() => {
                   setShowSearchModal(false)
-                  if (cameraActive && scannerRef.current) {
-                    scannerRef.current.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-                    setCameraActive(false)
-                  }
+                  setCameraActive(false)
                 }}
                 className="text-white/50 hover:text-white"
               >
@@ -577,10 +544,7 @@ export default function VerifyMember() {
               {!cameraActive ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setCameraError(null)
-                    setCameraActive(true)
-                  }}
+                  onClick={() => setCameraActive(true)}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-white/20 bg-white/5 px-4 py-2.5 text-sm text-white transition hover:bg-white/10"
                 >
                   <Camera size={16} className="text-gold-light" />
@@ -590,22 +554,18 @@ export default function VerifyMember() {
                 <div>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (scannerRef.current) {
-                        scannerRef.current.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-                      }
-                      setCameraActive(false)
-                    }}
+                    onClick={() => setCameraActive(false)}
                     className="mb-3 inline-flex items-center gap-1 text-xs text-red-300 hover:underline"
                   >
                     <CameraOff size={14} /> Stop Camera
                   </button>
-                  <div id="verify-camera-box" className="mx-auto w-full max-w-xs overflow-hidden rounded-lg border border-gold/40" />
+                  <div id="verify-camera-box" className="mx-auto w-full max-w-xs overflow-hidden rounded-lg border border-gold/40 bg-black" />
+                  {camera.starting && <p className="mt-2 text-xs text-white/50">Starting camera…</p>}
                 </div>
               )}
 
-              {cameraError && (
-                <p className="mt-2 text-xs text-red-300">{cameraError}</p>
+              {camera.error && (
+                <p role="alert" className="mt-2 text-xs text-red-300">{camera.error}</p>
               )}
             </div>
           </div>

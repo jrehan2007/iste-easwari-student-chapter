@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Linkedin } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
@@ -6,10 +7,44 @@ import { useAsync } from '../lib/useAsync'
 import { listDomains, listTeam, listTenures } from '../lib/api'
 import type { Domain, TeamMember } from '../lib/types'
 
-function Portrait({ person, size }: { person: TeamMember; size: string }) {
+/**
+ * An office bearer's photo. With a mouse it enlarges while the pointer is on
+ * it; on a phone a tap enlarges it and a tap anywhere else (or Escape) puts it
+ * back. `zoom` is how much it grows — smaller for the already-large head photos.
+ */
+function Portrait({ person, size, zoom = 1.9 }: { person: TeamMember; size: string; zoom?: number }) {
+  const [zoomed, setZoomed] = useState(false)
+  const ref = useRef<HTMLButtonElement>(null)
   const initials = person.name.split(' ').map((w) => w[0]).slice(0, 2).join('')
+
+  useEffect(() => {
+    if (!zoomed) return
+    const close = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setZoomed(false) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setZoomed(false) }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [zoomed])
+
   if (person.photo_url)
-    return <img src={person.photo_url} alt={person.name} className={`${size} rounded-sm object-cover`} />
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={`portrait-zoom shrink-0 ${zoomed ? 'is-zoomed' : ''}`}
+        style={{ '--portrait-zoom': zoom } as CSSProperties}
+        aria-label={`${zoomed ? 'Shrink' : 'Enlarge'} photo of ${person.name}`}
+        aria-pressed={zoomed}
+        // Touch only: a mouse already enlarges it on hover
+        onPointerUp={(e) => { if (e.pointerType !== 'mouse') setZoomed((z) => !z) }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setZoomed((z) => !z) } }}
+      >
+        <img src={person.photo_url} alt={person.name} loading="lazy" className={`${size} rounded-sm object-cover`} />
+      </button>
+    )
   return (
     <div className={`${size} flex items-center justify-center rounded-sm bg-turkish-mist font-display text-turkish-dark dark:bg-night dark:text-turkish-light`}>
       {initials}
@@ -440,7 +475,7 @@ export default function Professional() {
                   {/* Domain Head (if present) */}
                   {head && (
                     <article className="grid gap-6 border-l-2 border-turkish bg-turkish-mist/40 p-6 sm:grid-cols-[150px_1fr] dark:bg-night-soft">
-                      <Portrait person={head} size="h-[150px] w-[150px]" />
+                      <Portrait person={head} size="h-[150px] w-[150px]" zoom={1.45} />
                       <div>
                         <p className="text-sm uppercase tracking-[0.14em] text-turkish-dark dark:text-turkish-light">
                           {head.role ?? `${current?.name} Head`}
