@@ -8,6 +8,7 @@ import * as api from '../../lib/api'
 import { Panel, Table, Row, Action, Danger, useSaver } from './panels'
 import QrPanel from './QrPanel'
 import { isInstagramLink, normalizeExternalLink } from '../../lib/url'
+import { eventPhase } from '../../lib/eventStatus'
 import type { Lane, MembershipSettings } from '../../lib/types'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 
@@ -123,8 +124,8 @@ function EventsPanel() {
   const { data, reload } = useAsync(() => api.listEvents(), [])
   const { run, banner } = useSaver()
   const blank = {
-    title: '', description: '', location: '', venue: '', starts_at: '',
-    status: 'upcoming' as const, google_form_url: '', member_discount_pct: 0,
+    title: '', description: '', location: '', venue: '', starts_at: '', ends_at: '',
+    google_form_url: '', member_discount_pct: 0,
     member_opens_at: '', public_opens_at: '',
   }
   const [form, setForm] = useState<Record<string, string | number>>(blank)
@@ -153,11 +154,14 @@ function EventsPanel() {
           <input className="field" type="datetime-local" value={form.starts_at as string} onChange={set('starts_at')} />
         </div>
         <div>
-          <label className="label">Status</label>
-          <select className="field" value={form.status as string} onChange={set('status')}>
-            <option value="upcoming">upcoming</option><option value="ongoing">ongoing</option><option value="past">past</option>
-          </select>
+          <label className="label">Ends <span className="muted">(optional)</span></label>
+          <input className="field" type="datetime-local" value={form.ends_at as string} min={form.starts_at as string}
+            onChange={set('ends_at')} />
         </div>
+        <p className="muted text-sm sm:col-span-2">
+          Status is automatic: upcoming until the event's day, ongoing on the day, and past 24 hours after it ends
+          (or after the end of the day, if no end time is set).
+        </p>
         <div>
           <label className="label">Opens to members</label>
           <input className="field" type="datetime-local" value={form.member_opens_at as string}
@@ -178,12 +182,19 @@ function EventsPanel() {
           <input className="field" type="file" accept="image/*" onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)} />
         </div>
         <button className="btn-primary sm:col-span-2" onClick={() => run(
-          () => api.saveEvent({
+          () => {
+            const starts_at = new Date(form.starts_at as string).toISOString()
+            const ends_at = form.ends_at ? new Date(form.ends_at as string).toISOString() : null
+            return api.saveEvent({
             ...(form as object),
-            starts_at: new Date(form.starts_at as string).toISOString(),
+            starts_at,
+            ends_at,
+            // Stored for anything reading the table directly; the site works it out from the dates.
+            status: eventPhase({ starts_at, ends_at }),
             member_opens_at: form.member_opens_at ? new Date(form.member_opens_at as string).toISOString() : null,
             public_opens_at: form.public_opens_at ? new Date(form.public_opens_at as string).toISOString() : null,
-          } as never, banner_file),
+          } as never, banner_file)
+          },
           'Event published.', () => { setForm(blank); setBannerFile(null); reload() })}>
           Publish event
         </button>

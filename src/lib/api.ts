@@ -5,6 +5,7 @@ import type {
   AnalyticsReport, MemberVerificationResult, Resource, ScanResult, TeamMember,
   Tenure, VerificationStatus, VerifiedMember,
 } from './types'
+import { eventPhase } from './eventStatus'
 
 /**
  * Every read and write goes through here. There is no demo data — if Supabase
@@ -126,20 +127,25 @@ export async function deleteTeamMember(id: string) {
 }
 
 // ---------------------------------------------------------------- events
+/**
+ * Events, soonest first. `status` is worked out from each event's dates
+ * (see eventPhase), not read from the stored column, so an event moves from
+ * upcoming to ongoing to past on its own.
+ */
 export async function listEvents(status?: EventStatus) {
   if (!isSupabaseConfigured) return []
-  let q = supabase.from('events').select('*').order('starts_at', { ascending: true })
-  if (status) q = q.eq('status', status)
-  const { data, error } = await q
+  const { data, error } = await supabase.from('events').select('*').order('starts_at', { ascending: true })
   if (error) throw error
-  return (data ?? []) as ChapterEvent[]
+  const now = new Date()
+  const events = ((data ?? []) as ChapterEvent[]).map((e) => ({ ...e, status: eventPhase(e, now) }))
+  return status ? events.filter((e) => e.status === status) : events
 }
 
 export async function getEvent(id: string) {
   if (!isSupabaseConfigured) return null
   const { data, error } = await supabase.from('events').select('*').eq('id', id).single()
   if (error) throw error
-  return data as ChapterEvent
+  return { ...(data as ChapterEvent), status: eventPhase(data as ChapterEvent) }
 }
 
 export async function saveEvent(payload: Partial<ChapterEvent>, banner?: File | null) {

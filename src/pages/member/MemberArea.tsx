@@ -334,84 +334,9 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
 }
 
 // ---------------------------------------------------------------- Events
-const demoPriorityEvents = [
-  {
-    id: 'demo-hack',
-    title: 'DUMMY HACK',
-    description: 'A campus technology sprint for builders and problem solvers.',
-    location: 'OAT',
-    venue: 'OAT',
-    starts_at: '2026-09-18T18:00:00.000Z',
-    ends_at: '2026-09-18T21:00:00.000Z',
-    status: 'upcoming',
-    member_discount_pct: 10,
-    member_opens_at: '2026-09-15T00:00:00.000Z',
-    public_opens_at: '2026-09-16T12:00:00.000Z',
-    google_form_url: 'https://example.com/register/dummy-hack',
-  },
-  {
-    id: 'demo-bugthon',
-    title: 'BUGTHON',
-    description: 'A debugging challenge that rewards precision and speed.',
-    location: 'GALLERY HALL',
-    venue: 'GALLERY HALL',
-    starts_at: '2026-09-21T17:30:00.000Z',
-    ends_at: '2026-09-21T20:30:00.000Z',
-    status: 'upcoming',
-    member_discount_pct: 10,
-    member_opens_at: '2026-09-18T00:00:00.000Z',
-    public_opens_at: '2026-09-19T12:00:00.000Z',
-    google_form_url: 'https://example.com/register/bugthon',
-  },
-  {
-    id: 'demo-codeverse',
-    title: 'CODEVERSE',
-    description: 'An elite coding arena built for enthusiasts and finalists.',
-    location: 'SEMINAR HALL',
-    venue: 'SEMINAR HALL',
-    starts_at: '2026-09-25T18:00:00.000Z',
-    ends_at: '2026-09-25T21:00:00.000Z',
-    status: 'upcoming',
-    member_discount_pct: 15,
-    member_opens_at: '2026-09-22T00:00:00.000Z',
-    public_opens_at: '2026-09-23T12:00:00.000Z',
-    google_form_url: 'https://example.com/register/codeverse',
-  },
-  {
-    id: 'demo-technova',
-    title: 'TECHNOVA',
-    description: 'Future-facing innovation, product thinking, and technical demos.',
-    location: 'AUDITORIUM',
-    venue: 'AUDITORIUM',
-    starts_at: '2026-09-28T18:30:00.000Z',
-    ends_at: '2026-09-28T22:00:00.000Z',
-    status: 'upcoming',
-    member_discount_pct: 20,
-    member_opens_at: '2026-09-25T00:00:00.000Z',
-    public_opens_at: '2026-09-26T12:00:00.000Z',
-    google_form_url: 'https://example.com/register/technova',
-  },
-  {
-    id: 'demo-ai-arena',
-    title: 'AI ARENA',
-    description: 'A showcase of AI prototyping, ethics, and real-world use cases.',
-    location: 'BLOCK A',
-    venue: 'BLOCK A',
-    starts_at: '2026-10-02T18:00:00.000Z',
-    ends_at: '2026-10-02T21:30:00.000Z',
-    status: 'upcoming',
-    member_discount_pct: 15,
-    member_opens_at: '2026-09-28T00:00:00.000Z',
-    public_opens_at: '2026-09-29T12:00:00.000Z',
-    google_form_url: 'https://example.com/register/ai-arena',
-  },
-]
-
 function PriorityEvents() {
   const { data, loading } = useAsync(() => api.listEvents('upcoming'), [])
-  // TEMPORARY UI TEST DATA: keep the demo 5-card carousel visible while polishing the arc motion.
-  // Restore the live API by replacing this with `const list = (data ?? demoPriorityEvents) as ...` later.
-  const list = demoPriorityEvents as Awaited<ReturnType<typeof api.listEvents>>
+  const list = data ?? []
 
   if (loading && !data) return <p className="text-white/60">Loading…</p>
   if (!list.length) return <p className="text-white/60">No upcoming events yet.</p>
@@ -426,7 +351,8 @@ function PriorityEvents() {
 }
 
 function PriorityEventCarousel({ events }: { events: Awaited<ReturnType<typeof api.listEvents>> }) {
-  const [activeIndex, setActiveIndex] = useState(1)
+  // Start on the soonest event
+  const [activeIndex, setActiveIndex] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
   const dragStart = useRef(0)
