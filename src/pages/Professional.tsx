@@ -18,9 +18,72 @@ function Portrait({ person, size }: { person: TeamMember; size: string }) {
 }
 
 /**
- * The leadership page. Domains run down the left as a rail; picking one shows
- * that domain's head first, then the rest of the team, each with photo, year
- * and a line on what they actually do.
+ * Identify primary leadership positions:
+ * 1. President
+ * 2. Secretary
+ * 3. Treasurer
+ */
+function getPrimaryLeaderRank(m: TeamMember, domainName: string = '') {
+  const r = `${m.role || ''} ${domainName}`.toLowerCase()
+  if (r.includes('vice') || r.includes('joint')) return null
+  if (r.includes('president')) return 1
+  if (r.includes('secretary')) return 2
+  if (r.includes('treasurer')) return 3
+  return null
+}
+
+/**
+ * Identify secondary leadership positions:
+ * 1. Vice President
+ * 2. Joint Secretary
+ * 3. Joint Treasurer
+ */
+function getSecondaryLeaderRank(m: TeamMember, domainName: string = '') {
+  const r = `${m.role || ''} ${domainName}`.toLowerCase()
+  if (
+    r.includes('vice president') ||
+    r.includes('vice-president') ||
+    (r.includes('vice') && r.includes('president')) ||
+    r.includes('vp')
+  )
+    return 1
+  if (
+    r.includes('joint secretary') ||
+    r.includes('joint-secretary') ||
+    (r.includes('joint') && r.includes('secretary'))
+  )
+    return 2
+  if (
+    r.includes('joint treasurer') ||
+    r.includes('joint-treasurer') ||
+    (r.includes('joint') && r.includes('treasurer'))
+  )
+    return 3
+  return null
+}
+
+const isLeadershipDomain = (name: string = '') => {
+  const t = name.toLowerCase().trim()
+  return (
+    t.includes('president') ||
+    t.includes('secretary') ||
+    t.includes('treasurer') ||
+    t.includes('executive council') ||
+    t.includes('club leadership') ||
+    t.includes('secondary leadership') ||
+    t === 'leadership'
+  )
+}
+
+/**
+ * Organizational Hierarchy:
+ * 1. Tenure Selector
+ * 2. ISTE Executive Council (Centered Parent Header)
+ * 3. Club Leadership — Primary Level (President, Secretary, Treasurer)
+ * 4. Secondary Leadership — Secondary Level (Vice President, Joint Secretary, Joint Treasurer)
+ * 5. Two-Column Functional Layout:
+ *    - Left: Functional Teams & Domains Navigation
+ *    - Right: Selected Team Members
  */
 export default function Professional() {
   const domains = useAsync(() => listDomains(), [])
@@ -29,9 +92,20 @@ export default function Professional() {
   const [active, setActive] = useState<string | null>(null)
   const [activeTenure, setActiveTenure] = useState<string | null>(null)
 
+  const list = (domains.data ?? []) as Domain[]
+  const availableTenures = tenures.data ?? []
+
+  // Filter functional domains (exclude council-level leadership domains)
+  const functionalDomains = list.filter((d) => !isLeadershipDomain(d.name))
+
   useEffect(() => {
-    if (!active && domains.data?.length) setActive(domains.data[0].id)
-  }, [domains.data, active])
+    if (functionalDomains.length > 0) {
+      const isCurrentValid = functionalDomains.some((d) => d.id === active)
+      if (!isCurrentValid) {
+        setActive(functionalDomains[0].id)
+      }
+    }
+  }, [functionalDomains, active])
 
   useEffect(() => {
     if (!activeTenure && tenures.data?.length) {
@@ -41,12 +115,48 @@ export default function Professional() {
   }, [tenures.data, activeTenure])
 
   const all = (team.data ?? []).filter((member) => member.tenure_id === activeTenure)
-  const list = (domains.data ?? []) as Domain[]
-  const availableTenures = tenures.data ?? []
-  const current = list.find((d) => d.id === active)
-  const people = all.filter((m) => m.domain_id === active)
-  const head = people.find((m) => m.is_head)
-  const rest = people.filter((m) => !m.is_head)
+  const currentTenureObj = availableTenures.find((t) => t.id === activeTenure)
+
+  // Primary Leadership (President, Secretary, Treasurer)
+  const primaryLeaders = all
+    .map((m) => {
+      const dom = list.find((d) => d.id === m.domain_id)?.name || ''
+      const rank = getPrimaryLeaderRank(m, dom)
+      return { member: m, rank }
+    })
+    .filter((item): item is { member: TeamMember; rank: number } => item.rank !== null)
+    .sort((a, b) => a.rank - b.rank || (a.member.sort_order ?? 0) - (b.member.sort_order ?? 0))
+    .map((item) => item.member)
+
+  // Secondary Leadership (Vice President, Joint Secretary, Joint Treasurer)
+  const secondaryLeaders = all
+    .map((m) => {
+      const dom = list.find((d) => d.id === m.domain_id)?.name || ''
+      const rank = getSecondaryLeaderRank(m, dom)
+      return { member: m, rank }
+    })
+    .filter((item): item is { member: TeamMember; rank: number } => item.rank !== null)
+    .sort((a, b) => a.rank - b.rank || (a.member.sort_order ?? 0) - (b.member.sort_order ?? 0))
+    .map((item) => item.member)
+
+  const allLeadershipMemberIds = new Set([
+    ...primaryLeaders.map((m) => m.id),
+    ...secondaryLeaders.map((m) => m.id),
+  ])
+
+  const current = functionalDomains.find((d) => d.id === active) || functionalDomains[0]
+  const teamMembers = current
+    ? all.filter((m) => m.domain_id === current.id && !allLeadershipMemberIds.has(m.id))
+    : []
+  const head = teamMembers.find((m) => m.is_head)
+  const rest = head ? teamMembers.filter((m) => !m.is_head) : teamMembers
+
+  const handleTenureChange = (newTenureId: string) => {
+    setActiveTenure(newTenureId)
+    if (functionalDomains.length > 0) {
+      setActive(functionalDomains[0].id)
+    }
+  }
 
   if (domains.loading || team.loading || tenures.loading)
     return <div className="container-page py-24 muted">Loading…</div>
@@ -69,116 +179,342 @@ export default function Professional() {
 
   return (
     <div className="container-page py-14">
+      {/* Page Header */}
       <h1 className="section-title">Office Bearers</h1>
       <p className="muted mt-3 max-w-2xl">
         Meet the chapter leadership for each tenure. Select a tenure and domain to explore the team.
       </p>
       <div className="rule mt-5" />
 
+      {/* 1. Tenure Section */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="font-display font-semibold">Tenure</span>
+        <span className="font-display font-semibold text-ink dark:text-slate-200">Tenure</span>
         {availableTenures.map((tenure) => (
-          <button key={tenure.id} onClick={() => setActiveTenure(tenure.id)}
-            className={`rounded-sm border px-4 py-2 text-sm transition ${
+          <button
+            key={tenure.id}
+            onClick={() => handleTenureChange(tenure.id)}
+            className={`rounded-sm border px-4 py-2 text-sm font-medium transition ${
               tenure.id === activeTenure
-                ? 'border-gold bg-gold text-black'
+                ? 'border-gold bg-gold text-black shadow-sm'
                 : 'border-gold/40 text-gold-deep hover:bg-gold/10 dark:text-gold-light'
-            }`}>
+            }`}
+          >
             {tenure.label}{tenure.is_current ? ' · Current' : ''}
           </button>
         ))}
       </div>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[230px_1fr]">
-        {/* Domain rail */}
-        <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
-          {list.map((d) => {
-            const isActive = d.id === active
-            const count = all.filter((m) => m.domain_id === d.id).length
-            return (
-              <button key={d.id} onClick={() => setActive(d.id)}
-                className={`group relative shrink-0 border-l-2 px-4 py-3 text-left transition lg:w-full ${
-                  isActive
-                    ? 'border-turkish bg-turkish-mist dark:bg-night-soft'
-                    : 'border-transparent hover:border-turkish/40 hover:bg-turkish-mist/50 dark:hover:bg-night-soft/60'
-                }`}>
-                <span className={`font-display block text-lg font-semibold ${
-                  isActive ? 'text-turkish-dark dark:text-turkish-light' : ''}`}>
-                  {d.name}
+      {/* 2. Centered Executive Council */}
+      <div className="mt-10 flex flex-col items-center text-center">
+        <div className="relative flex w-full max-w-2xl items-center justify-center">
+          <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent to-turkish/40 sm:block" />
+          <div className="mx-3 rounded-lg border border-gold/30 bg-white/70 px-8 py-5 shadow-sm dark:border-gold/25 dark:bg-night-soft">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl dark:text-slate-100">
+              ISTE Executive Council
+            </h2>
+            <p className="muted mt-1 text-xs sm:text-sm">
+              Leadership &amp; functional domains governing the{' '}
+              <span className="font-semibold text-gold-deep dark:text-gold-light">
+                {currentTenureObj?.label ?? 'selected'}
+              </span>{' '}
+              tenure.
+            </p>
+          </div>
+          <div className="hidden h-px flex-1 bg-gradient-to-l from-transparent to-turkish/40 sm:block" />
+        </div>
+
+        {/* Vertical connector to Club Leadership */}
+        <div className="my-3 flex flex-col items-center">
+          <div className="h-5 w-px bg-gold/50" />
+          <div className="h-1.5 w-1.5 rounded-full bg-gold" />
+        </div>
+      </div>
+
+      {/* 3. Level 1: Primary Club Leadership (President, Secretary, Treasurer) */}
+      {primaryLeaders.length > 0 && (
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-gold-deep dark:text-gold-light">
+            Club Leadership
+          </div>
+
+          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-5">
+            {primaryLeaders.map((m) => (
+              <article
+                key={m.id}
+                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-4 rounded-sm border-l-2 border-gold border-y border-r border-gold/30 bg-white/70 p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
+              >
+                <Portrait person={m} size="h-20 w-20 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gold-deep dark:text-gold-light">
+                    {m.role || 'Executive Leader'}
+                  </p>
+                  <h4 className="font-display mt-0.5 text-base font-bold text-ink sm:text-lg dark:text-slate-100">
+                    {m.name}
+                  </h4>
+                  <p className="muted text-xs">
+                    {[m.year, m.department].filter(Boolean).join(' · ')}
+                  </p>
+                  {m.bio && <p className="muted mt-1 text-xs leading-relaxed line-clamp-2">{m.bio}</p>}
+                  {m.linkedin_url && (
+                    <a
+                      href={m.linkedin_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-turkish-dark hover:underline dark:text-turkish-light"
+                    >
+                      <Linkedin size={13} /> LinkedIn
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Level 2: Secondary Leadership (Vice President, Joint Secretary, Joint Treasurer) */}
+      {secondaryLeaders.length > 0 && (
+        <div className="flex flex-col items-center text-center">
+          {/* Subtle hierarchy connector from Primary to Secondary */}
+          <div className="my-4 flex flex-col items-center">
+            <div className="h-5 w-px bg-turkish/40" />
+            <div className="h-1.5 w-1.5 rounded-full bg-turkish" />
+          </div>
+
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-turkish/40 bg-turkish/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-turkish-dark dark:text-turkish-light">
+            Secondary Leadership
+          </div>
+
+          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-5">
+            {secondaryLeaders.map((m) => (
+              <article
+                key={m.id}
+                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-4 rounded-sm border-l-2 border-turkish border-y border-r border-turkish/20 bg-turkish-mist/40 p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
+              >
+                <Portrait person={m} size="h-20 w-20 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
+                    {m.role || 'Secondary Leader'}
+                  </p>
+                  <h4 className="font-display mt-0.5 text-base font-bold text-ink sm:text-lg dark:text-slate-100">
+                    {m.name}
+                  </h4>
+                  <p className="muted text-xs">
+                    {[m.year, m.department].filter(Boolean).join(' · ')}
+                  </p>
+                  {m.bio && <p className="muted mt-1 text-xs leading-relaxed line-clamp-2">{m.bio}</p>}
+                  {m.linkedin_url && (
+                    <a
+                      href={m.linkedin_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-turkish-dark hover:underline dark:text-turkish-light"
+                    >
+                      <Linkedin size={13} /> LinkedIn
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Subtle connector to functional teams */}
+      {(primaryLeaders.length > 0 || secondaryLeaders.length > 0) && (
+        <div className="my-6 flex flex-col items-center">
+          <div className="h-6 w-px bg-turkish/30" />
+          <div className="h-1.5 w-1.5 rounded-full bg-turkish/60" />
+        </div>
+      )}
+
+      {/* 5. Two-Column Layout: Teams & Domains (Left) + Selected Team Members (Right) */}
+      <div className="mt-2 grid gap-8 lg:grid-cols-[320px_1fr]">
+        {/* LEFT COLUMN: TEAMS & DOMAINS */}
+        <aside>
+          <div className="rounded-sm border border-turkish/20 bg-white/40 p-3.5 shadow-sm dark:border-night-line dark:bg-night/70">
+            <div className="mb-3 flex items-center justify-between border-b border-turkish/20 pb-2.5 dark:border-night-line">
+              <h3 className="font-display text-xs font-bold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
+                Teams &amp; Domains
+              </h3>
+              <span className="text-xs font-medium text-ink/60 dark:text-slate-400">
+                {functionalDomains.length} {functionalDomains.length === 1 ? 'Team' : 'Teams'}
+              </span>
+            </div>
+
+            <nav className="flex max-h-[620px] flex-col gap-1.5 overflow-y-auto pr-1">
+              {functionalDomains.map((d) => {
+                const isSelected = d.id === (current?.id ?? active)
+                const count = all.filter((m) => m.domain_id === d.id && !allLeadershipMemberIds.has(m.id)).length
+
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => setActive(d.id)}
+                    className={`group relative flex w-full items-center justify-between rounded-sm border px-3.5 py-3 text-left transition ${
+                      isSelected
+                        ? 'border-l-4 border-turkish border-y-turkish/20 border-r-turkish/20 bg-turkish-mist shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft'
+                        : 'border-transparent hover:border-turkish/30 hover:bg-turkish-mist/40 dark:hover:bg-night-soft/60'
+                    }`}
+                  >
+                    <div className="min-w-0 pr-2">
+                      <span
+                        className={`font-display block text-sm font-semibold leading-snug tracking-wide uppercase transition ${
+                          isSelected
+                            ? 'font-bold text-turkish-dark dark:text-turkish-light'
+                            : 'text-ink dark:text-slate-200 group-hover:text-turkish-dark dark:group-hover:text-turkish-light'
+                        }`}
+                      >
+                        {d.name}
+                      </span>
+                      <span className="muted text-xs">
+                        {count} {count === 1 ? 'Member' : 'Members'}
+                      </span>
+                    </div>
+
+                    <span
+                      className={`shrink-0 text-sm font-bold transition-transform ${
+                        isSelected
+                          ? 'translate-x-0.5 text-turkish'
+                          : 'text-ink/30 dark:text-slate-600 group-hover:translate-x-0.5 group-hover:text-turkish'
+                      }`}
+                    >
+                      →
+                    </span>
+                  </button>
+                )
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        {/* RIGHT COLUMN: SELECTED TEAM MEMBERS */}
+        <main>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${activeTenure}-${current?.id ?? 'none'}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Selected Team Header */}
+              <div className="flex flex-col justify-between gap-2 border-b-2 border-turkish/40 pb-4 sm:flex-row sm:items-end">
+                <div>
+                  <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-ink sm:text-3xl dark:text-slate-100">
+                    {current?.name}
+                  </h3>
+                  {current?.tagline && (
+                    <p className="mt-1 text-sm font-medium text-turkish-dark dark:text-turkish-light">
+                      {current.tagline}
+                    </p>
+                  )}
+                </div>
+
+                <span className="inline-flex shrink-0 items-center self-start rounded-sm border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gold-deep sm:self-auto dark:text-gold-light">
+                  {teamMembers.length} {teamMembers.length === 1 ? 'Member' : 'Members'}
                 </span>
-                <span className="muted text-xs">{count} {count === 1 ? 'person' : 'people'}</span>
-              </button>
-            )
-          })}
-        </nav>
+              </div>
 
-        {/* Domain detail */}
-        <AnimatePresence mode="wait">
-          <motion.section key={active ?? 'none'}
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>
+              {current?.description && (
+                <p className="muted mt-3 max-w-3xl text-sm leading-relaxed">
+                  {current.description}
+                </p>
+              )}
 
-            {current?.tagline && (
-              <p className="text-turkish-dark dark:text-turkish-light">{current.tagline}</p>
-            )}
-            <h2 className="font-display mt-1 text-3xl font-semibold">{current?.name}</h2>
-            {current?.description && <p className="muted mt-2 max-w-2xl">{current.description}</p>}
+              {/* Members Display */}
+              {!teamMembers.length ? (
+                <div className="mt-8 rounded-sm border border-turkish/15 bg-white/50 p-8 text-center dark:border-night-line dark:bg-night-soft/40">
+                  <h4 className="font-display text-xl font-bold uppercase tracking-wide text-ink dark:text-slate-100">
+                    {current?.name}
+                  </h4>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
+                    0 Members
+                  </p>
+                  <p className="muted mt-3 text-sm">
+                    No members are currently assigned to this team.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6 space-y-6">
+                  {/* Domain Head (if present) */}
+                  {head && (
+                    <article className="grid gap-6 border-l-2 border-turkish bg-turkish-mist/40 p-6 sm:grid-cols-[150px_1fr] dark:bg-night-soft">
+                      <Portrait person={head} size="h-[150px] w-[150px]" />
+                      <div>
+                        <p className="text-sm uppercase tracking-[0.14em] text-turkish-dark dark:text-turkish-light">
+                          {head.role ?? `${current?.name} Head`}
+                        </p>
+                        <h4 className="font-display mt-1 text-2xl font-semibold">{head.name}</h4>
+                        <p className="muted mt-0.5 text-sm">
+                          {[head.year, head.department].filter(Boolean).join(' · ')}
+                        </p>
+                        {head.bio && <p className="mt-3 text-sm leading-relaxed">{head.bio}</p>}
+                        {head.linkedin_url && (
+                          <a
+                            href={head.linkedin_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center gap-2 text-sm text-turkish-dark hover:underline dark:text-turkish-light"
+                          >
+                            <Linkedin size={16} /> LinkedIn
+                          </a>
+                        )}
+                      </div>
+                    </article>
+                  )}
 
-            {!people.length ? (
-              <EmptyState title="Nobody added to this domain yet" hint="Add them in the admin Roles panel." />
-            ) : (
-              <>
-                {head && (
-                  <article className="mt-8 grid gap-6 border-l-2 border-turkish bg-turkish-mist/40 p-6 sm:grid-cols-[150px_1fr] dark:bg-night-soft">
-                    <Portrait person={head} size="h-[150px] w-[150px]" />
+                  {/* Rest of Team Members in Responsive Grid */}
+                  {rest.length > 0 && (
                     <div>
-                      <p className="text-sm uppercase tracking-[0.14em] text-turkish-dark dark:text-turkish-light">
-                        {head.role ?? `${current?.name} Head`}
-                      </p>
-                      <h3 className="font-display mt-1 text-2xl font-semibold">{head.name}</h3>
-                      <p className="muted mt-0.5 text-sm">
-                        {[head.year, head.department].filter(Boolean).join(' · ')}
-                      </p>
-                      {head.bio && <p className="mt-3 leading-relaxed">{head.bio}</p>}
-                      {head.linkedin_url && (
-                        <a href={head.linkedin_url} target="_blank" rel="noreferrer"
-                          className="mt-3 inline-flex items-center gap-2 text-sm text-turkish-dark hover:underline dark:text-turkish-light">
-                          <Linkedin size={16} /> LinkedIn
-                        </a>
+                      {head && (
+                        <div className="mb-4">
+                          <h4 className="font-display text-lg font-semibold tracking-wide text-ink dark:text-slate-200">
+                            The {current?.name} Team
+                          </h4>
+                          <div className="rule mt-2" />
+                        </div>
                       )}
-                    </div>
-                  </article>
-                )}
 
-                {rest.length > 0 && (
-                  <>
-                    <h3 className="font-display mt-10 text-lg font-semibold tracking-wide">
-                      The {current?.name} team
-                    </h3>
-                    <div className="rule mt-3" />
-                    <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                      {rest.map((m, i) => (
-                        <motion.article key={m.id}
-                          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.35, delay: i * 0.04 }}
-                          className="group flex gap-4 border-b border-turkish/15 pb-5 dark:border-night-line">
-                          <Portrait person={m} size="h-20 w-20" />
-                          <div className="min-w-0">
-                            <h4 className="font-display text-lg font-semibold leading-tight">{m.name}</h4>
-                            {m.role && <p className="text-sm text-turkish-dark dark:text-turkish-light">{m.role}</p>}
-                            <p className="muted text-xs">{[m.year, m.department].filter(Boolean).join(' · ')}</p>
-                            {m.bio && <p className="muted mt-1.5 text-sm leading-relaxed">{m.bio}</p>}
-                          </div>
-                        </motion.article>
-                      ))}
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {rest.map((m) => (
+                          <article
+                            key={m.id}
+                            className="group flex gap-4 rounded-sm border border-turkish/15 bg-white/40 p-4 dark:border-night-line dark:bg-night-soft/50"
+                          >
+                            <Portrait person={m} size="h-20 w-20 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-display text-lg font-semibold leading-tight">{m.name}</h5>
+                              {m.role && (
+                                <p className="text-sm text-turkish-dark dark:text-turkish-light">{m.role}</p>
+                              )}
+                              <p className="muted text-xs">
+                                {[m.year, m.department].filter(Boolean).join(' · ')}
+                              </p>
+                              {m.bio && <p className="muted mt-1.5 text-sm leading-relaxed line-clamp-2">{m.bio}</p>}
+                              {m.linkedin_url && (
+                                <a
+                                  href={m.linkedin_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="mt-2 inline-flex items-center gap-1.5 text-xs text-turkish-dark hover:underline dark:text-turkish-light"
+                                >
+                                  <Linkedin size={14} /> LinkedIn
+                                </a>
+                              )}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
                     </div>
-                  </>
-                )}
-              </>
-            )}
-          </motion.section>
-        </AnimatePresence>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
     </div>
   )
 }
+
