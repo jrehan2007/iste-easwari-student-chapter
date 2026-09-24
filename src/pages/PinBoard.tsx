@@ -1,5 +1,5 @@
-import { Instagram, ExternalLink } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
+import AnnouncementLink from '../components/AnnouncementLink'
 import { useAsync } from '../lib/useAsync'
 import { listAnnouncements } from '../lib/api'
 
@@ -29,12 +29,7 @@ export default function PinBoard() {
                 <h2 className="mt-1 text-xl">{a.title}</h2>
                 {a.image_url && <img src={a.image_url} alt="" className="mt-3 w-full" />}
                 <p className="muted mt-2">{a.body}</p>
-                {a.source === 'instagram' && a.external_url && (
-                  <a href={a.external_url} target="_blank" rel="noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 text-sm text-turkish-dark hover:underline dark:text-turkish-light">
-                    <Instagram size={16} /> View on Instagram <ExternalLink size={14} />
-                  </a>
-                )}
+                <AnnouncementLink href={a.external_url} className="mt-3" />
               </article>
             ))}
           </div>

@@ -66,3 +66,34 @@ export function getMemberVerificationUrl(memberIdOrCode: string): string {
 
   return verificationUrl
 }
+
+/**
+ * Cleans up a link typed into an admin form. An empty box means "no link"
+ * (null); a bare address like `instagram.com/p/…` gets `https://` added.
+ * Returns `undefined` when the text can't be a web link, so the form can
+ * refuse to save it.
+ */
+export function normalizeExternalLink(input: string): string | null | undefined {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+  const withScheme = /^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`
+  try {
+    const url = new URL(withScheme)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
+    if (!url.hostname.includes('.')) return undefined
+    return url.href
+  } catch {
+    return undefined
+  }
+}
+
+/** True for instagram.com links (posts, reels, profiles), including `www.` and `m.`. */
+export function isInstagramLink(link?: string | null): boolean {
+  if (!link) return false
+  try {
+    const host = new URL(link).hostname.toLowerCase()
+    return host === 'instagram.com' || host.endsWith('.instagram.com') || host === 'instagr.am'
+  } catch {
+    return false
+  }
+}

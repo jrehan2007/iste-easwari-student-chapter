@@ -246,6 +246,18 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   color: var(--hero-gold);
 }
 
+/* Announcements with a link: hold the ticker still while it's being aimed at. */
+.live-ticker-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--hero-gold);
+  text-underline-offset: 4px;
+}
+.live-ticker-link:hover,
+.live-ticker-link:focus-visible { color: var(--hero-gold); }
+.live-ticker-window:hover .live-ticker-track,
+.live-ticker-window:focus-within .live-ticker-track { animation-play-state: paused; }
+
 @keyframes live-ticker-scroll {
   to { transform: translateX(-50%); }
 }

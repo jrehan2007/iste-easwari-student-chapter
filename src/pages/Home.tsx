@@ -6,6 +6,7 @@ import EmptyState from '../components/EmptyState'
 import { useAsync } from '../lib/useAsync'
 import { listAnnouncements, listEvents } from '../lib/api'
 import LiveTicker from '../components/LiveTicker'
+import AnnouncementLink from '../components/AnnouncementLink'
 
 import FeedbackSection from '../components/FeedbackSection'
 
@@ -53,13 +54,14 @@ export default function Home() {
           : (
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {posts.data.map((a) => (
-                <article key={a.id} className="card flex flex-col">
+                <article key={a.id} className="card flex min-w-0 flex-col overflow-hidden">
                   <p className="text-sm text-turkish-dark dark:text-turkish-light">
                     {new Date(a.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                     {a.source === 'instagram' && ' · from Instagram'}
                   </p>
-                  <h3 className="mt-2 text-xl">{a.title}</h3>
-                  <p className="muted mt-2 flex-1">{a.body}</p>
+                  <h3 className="mt-2 text-xl [overflow-wrap:anywhere]">{a.title}</h3>
+                  <p className="muted mt-2 flex-1 [overflow-wrap:anywhere]">{a.body}</p>
+                  <AnnouncementLink href={a.external_url} className="mt-4 self-start" />
                 </article>
               ))}
             </div>

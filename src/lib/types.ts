@@ -160,7 +160,7 @@ export interface Announcement {
   display_order: number
   image_url?: string
   source?: 'chapter' | 'instagram'
-  external_url?: string
+  external_url?: string | null
   created_at: string
 }
 

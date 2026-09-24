@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import {
-  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, Settings2, Award,
+  CalendarDays, Pin, Images, IdCard, QrCode, Users, BarChart3, BookOpen, Settings2, Award, Link2,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
 import { Panel, Table, Row, Action, Danger, useSaver } from './panels'
 import QrPanel from './QrPanel'
+import { isInstagramLink, normalizeExternalLink } from '../../lib/url'
 import type { Lane, MembershipSettings } from '../../lib/types'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 
@@ -568,8 +569,10 @@ function RolesPanel() {
 function PinPanel() {
   const { data, reload } = useAsync(() => api.listAnnouncements(), [])
   const { run, banner } = useSaver()
-  const blank = { id: '', body: '', is_active: true, display_order: 0 }
+  const blank = { id: '', body: '', external_url: '', is_active: true, display_order: 0 }
   const [form, setForm] = useState(blank)
+  // null = no link, undefined = not a usable web address
+  const link = normalizeExternalLink(form.external_url)
 
   return (
     <Panel title="Live Wire" hint="Active messages scroll across the public homepage and member dashboard.">
@@ -577,6 +580,14 @@ function PinPanel() {
       <div className="card grid gap-3">
         <textarea className="field sm:col-span-2" rows={3} placeholder="Announcement message" value={form.body}
           onChange={(e) => setForm({ ...form, body: e.target.value })} />
+        <div className="sm:col-span-2">
+          <input className="field" type="url" inputMode="url" placeholder="Link (optional) — Instagram post, reel, form or website"
+            value={form.external_url} aria-invalid={link === undefined}
+            onChange={(e) => setForm({ ...form, external_url: e.target.value })} />
+          {link === undefined && (
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">Enter a web address, e.g. https://www.instagram.com/p/…</p>
+          )}
+        </div>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={form.is_active} className="h-4 w-4 accent-[#C9A227]"
             onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
@@ -587,8 +598,11 @@ function PinPanel() {
           <input className="field max-w-24" type="number" value={form.display_order}
             onChange={(e) => setForm({ ...form, display_order: Number(e.target.value) })} />
         </label>
-        <button className="btn-primary w-fit sm:col-span-2" disabled={!form.body.trim()}
-          onClick={() => run(() => api.saveAnnouncement({ ...form, title: form.body, source: 'chapter' }),
+        <button className="btn-primary w-fit sm:col-span-2" disabled={!form.body.trim() || link === undefined}
+          onClick={() => run(() => api.saveAnnouncement({
+            ...form, title: form.body, external_url: link,
+            source: isInstagramLink(link) ? 'instagram' : 'chapter',
+          }),
             form.id ? 'Announcement updated.' : 'Announcement published.', () => { setForm(blank); reload() })}>
           {form.id ? 'Save announcement' : 'Publish announcement'}
         </button>
@@ -598,9 +612,15 @@ function PinPanel() {
           {data.map((a) => (
             <li key={a.id} className="flex items-center justify-between border border-turkish/20 p-3 dark:border-night-line">
               <span className="min-w-0 flex-1 truncate">{a.body || a.title}</span>
+              {a.external_url && (
+                <a href={a.external_url} target="_blank" rel="noreferrer" title={a.external_url} aria-label="Open the attached link"
+                  className="ml-3 shrink-0 text-turkish-dark hover:text-turkish dark:text-turkish-light">
+                  <Link2 size={16} />
+                </a>
+              )}
               <span className="mx-3 text-sm muted">{a.is_active ? 'Active' : 'Inactive'} · #{a.display_order}</span>
               <div className="flex gap-3">
-                <Action onClick={() => setForm({ id: a.id, body: a.body || a.title, is_active: a.is_active, display_order: a.display_order })}>Edit</Action>
+                <Action onClick={() => setForm({ id: a.id, body: a.body || a.title, external_url: a.external_url ?? '', is_active: a.is_active, display_order: a.display_order })}>Edit</Action>
                 <Action onClick={() => run(() => api.saveAnnouncement({ id: a.id, is_active: !a.is_active }), 'Status updated.', reload)}>
                   {a.is_active ? 'Disable' : 'Enable'}
                 </Action>
