@@ -18,8 +18,24 @@ import VerifyMember from './pages/VerifyMember'
 import IntroGate, { shouldPlayIntro } from './components/IntroGate'
 
 export default function App() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      const id = hash.replace('#', '')
+      const el = document.getElementById(id)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' })
+        return
+      } else {
+        const timer = setTimeout(() => {
+          const delayedEl = document.getElementById(id)
+          if (delayedEl) delayedEl.scrollIntoView({ behavior: 'smooth' })
+        }, 150)
+        return () => clearTimeout(timer)
+      }
+    }
+    window.scrollTo(0, 0)
+  }, [pathname, hash])
   // The entry film plays on a bare screen: while it runs, neither the header,
   // the ticker nor any page is mounted, so nothing can show through it.
   const [introPlaying, setIntroPlaying] = useState(() => pathname === '/' && shouldPlayIntro())
@@ -32,7 +48,7 @@ export default function App() {
   if (introPlaying) return <IntroGate onDone={() => setIntroPlaying(false)} />
 
   return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-clip">
+    <div className="flex min-h-screen w-full flex-col">
       {!bare && <Header />}
       <main className={`flex-1 w-full ${showWatermark ? 'relative page-watermark isolate' : ''}`}>
         <Routes>

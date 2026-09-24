@@ -371,7 +371,9 @@ function RolesPanel() {
   const team = useAsync(() => api.listTeam(), [])
   const tenures = useAsync(() => api.listTenures(), [])
   const { run, banner } = useSaver()
-  const [dom, setDom] = useState({ name: '', tagline: '', description: '' })
+  const domainBlank = { id: '', name: '', tagline: '', description: '' }
+  const [dom, setDom] = useState(domainBlank)
+  const [domainToDelete, setDomainToDelete] = useState<{ id: string; name: string } | null>(null)
   const blank = { id: '', name: '', role: '', domain_id: '', tenure_id: '', year: '', department: '', bio: '', linkedin_url: '', is_head: false }
   const [form, setForm] = useState(blank)
   const [photo, setPhoto] = useState<File | null>(null)
@@ -382,6 +384,30 @@ function RolesPanel() {
     <Panel title="Roles"
       hint="Create a domain, then add its head and team. The head shows first on the public page.">
       {banner}
+
+      {domainToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="card max-w-md w-full space-y-4 border-turkish shadow-2xl">
+            <h3 className="font-display text-lg font-semibold">Delete domain</h3>
+            <p className="muted text-sm">
+              Are you sure you want to delete <span className="font-semibold text-slate-100">"{domainToDelete.name}"</span>?
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button className="btn-outline text-sm" onClick={() => setDomainToDelete(null)}>
+                Cancel
+              </button>
+              <button className="btn bg-red-700 text-white hover:bg-red-800 text-sm"
+                onClick={() => run(
+                  () => api.deleteDomain(domainToDelete.id),
+                  'Domain deleted.',
+                  () => { setDomainToDelete(null); domains.reload(); team.reload() }
+                )}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="card space-y-4">
         <div>
@@ -400,11 +426,18 @@ function RolesPanel() {
               onChange={(e) => setTenureForm({ ...tenureForm, is_current: e.target.checked })} />
             Make current
           </label>
-          <button className="btn-primary sm:col-span-4" disabled={!tenureForm.label || !tenureForm.start_date || !tenureForm.end_date}
-            onClick={() => run(() => api.saveTenure(tenureForm), tenureForm.id ? 'Tenure updated.' : 'Tenure created.',
-              () => { setTenureForm(tenureBlank); tenures.reload(); team.reload() })}>
-            {tenureForm.id ? 'Save tenure' : 'Create tenure'}
-          </button>
+          <div className="flex gap-2 sm:col-span-4">
+            <button className="btn-primary" disabled={!tenureForm.label || !tenureForm.start_date || !tenureForm.end_date}
+              onClick={() => run(() => api.saveTenure(tenureForm), tenureForm.id ? 'Tenure updated.' : 'Tenure created.',
+                () => { setTenureForm(tenureBlank); tenures.reload(); team.reload() })}>
+              {tenureForm.id ? 'Save tenure' : 'Create tenure'}
+            </button>
+            {tenureForm.id && (
+              <button className="btn-outline" onClick={() => setTenureForm(tenureBlank)}>
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
         {tenures.data?.length ? (
           <Table head={['Tenure', 'Dates', 'Status', '']}>
@@ -423,18 +456,50 @@ function RolesPanel() {
         ) : <p className="muted text-sm">No tenures yet. Create one before adding office bearers.</p>}
       </div>
 
-      <div className="card grid gap-3 sm:grid-cols-3">
-        <input className="field" placeholder="New domain name" value={dom.name}
-          onChange={(e) => setDom({ ...dom, name: e.target.value })} />
-        <input className="field" placeholder="Tagline" value={dom.tagline}
-          onChange={(e) => setDom({ ...dom, tagline: e.target.value })} />
-        <input className="field" placeholder="Short description" value={dom.description}
-          onChange={(e) => setDom({ ...dom, description: e.target.value })} />
-        <button className="btn-primary sm:col-span-3" disabled={!dom.name}
-          onClick={() => run(() => api.createDomain(dom), 'Domain created.',
-            () => { setDom({ name: '', tagline: '', description: '' }); domains.reload() })}>
-          Create domain
-        </button>
+      <div className="card space-y-4">
+        <div>
+          <h3 className="font-display text-lg font-semibold">Manage domains</h3>
+          <p className="muted mt-1 text-sm">Create functional domains (e.g. Web Development, AI &amp; ML) before adding office bearers.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <input className="field" placeholder="Domain name, e.g. Web Development" value={dom.name}
+            onChange={(e) => setDom({ ...dom, name: e.target.value })} />
+          <input className="field" placeholder="Tagline" value={dom.tagline}
+            onChange={(e) => setDom({ ...dom, tagline: e.target.value })} />
+          <input className="field" placeholder="Short description" value={dom.description}
+            onChange={(e) => setDom({ ...dom, description: e.target.value })} />
+          <div className="flex gap-2 sm:col-span-3">
+            <button className="btn-primary" disabled={!dom.name.trim()}
+              onClick={() => run(() => api.saveDomain(dom), dom.id ? 'Domain updated.' : 'Domain created.',
+                () => { setDom(domainBlank); domains.reload(); team.reload() })}>
+              {dom.id ? 'Save changes' : 'Create domain'}
+            </button>
+            {dom.id && (
+              <button className="btn-outline" onClick={() => setDom(domainBlank)}>
+                Cancel
+              </button>
+            )}
+          </div>
+        </div>
+        {domains.data?.length ? (
+          <Table head={['Domain', 'Tagline', 'Description', '']}>
+            {domains.data.map((d) => (
+              <Row key={d.id}>
+                <td className="p-3 font-semibold">{d.name}</td>
+                <td className="p-3 muted">{d.tagline || '—'}</td>
+                <td className="p-3 muted">{d.description || '—'}</td>
+                <td className="space-x-3 p-3 text-right">
+                  <Action onClick={() => setDom({ id: d.id, name: d.name, tagline: d.tagline ?? '', description: d.description ?? '' })}>
+                    Edit
+                  </Action>
+                  <Danger onClick={() => setDomainToDelete({ id: d.id, name: d.name })}>
+                    Delete
+                  </Danger>
+                </td>
+              </Row>
+            ))}
+          </Table>
+        ) : <p className="muted text-sm">No domains yet. Create one above.</p>}
       </div>
 
       <div className="card grid gap-3 sm:grid-cols-2">

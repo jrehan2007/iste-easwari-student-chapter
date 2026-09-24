@@ -73,10 +73,19 @@ export async function listDomains() {
   return (data ?? []) as Domain[]
 }
 
-export async function createDomain(row: Partial<Domain>) {
+export async function saveDomain(row: Partial<Domain>) {
   guard()
-  const { error } = await supabase.from('domains').insert(row)
+  const id = nullableUuid(row.id)
+  const { id: rawId, ...fields } = row
+  const { data, error } = id
+    ? await supabase.from('domains').update(fields).eq('id', id).select().single()
+    : await supabase.from('domains').insert(fields).select().single()
   if (error) throw error
+  return data as Domain
+}
+
+export async function createDomain(row: Partial<Domain>) {
+  return saveDomain(row)
 }
 
 export async function deleteDomain(id: string) {

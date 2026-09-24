@@ -7,6 +7,8 @@ import { useAsync } from '../lib/useAsync'
 import { listAnnouncements, listEvents } from '../lib/api'
 import LiveTicker from '../components/LiveTicker'
 
+import FeedbackSection from '../components/FeedbackSection'
+
 export default function Home() {
   const posts = useAsync(() => listAnnouncements(3), [])
   const upcoming = useAsync(() => listEvents('upcoming'), [])
@@ -16,6 +18,8 @@ export default function Home() {
   const announcementsVisible = useInView(announcementsRef, { once: true, amount: 0.2 })
   const calendarRef = useRef<HTMLElement>(null)
   const calendarVisible = useInView(calendarRef, { once: true, amount: 0.2 })
+  const feedbackRef = useRef<HTMLDivElement>(null)
+  const feedbackVisible = useInView(feedbackRef, { once: true, amount: 0.2 })
 
   // The hero fills the first screen; everything below it arrives as it scrolls in.
   return (
@@ -92,6 +96,15 @@ export default function Home() {
             )}
         </div>
       </motion.section>
+
+      <motion.div
+        ref={feedbackRef}
+        initial={{ opacity: 0, y: 36 }}
+        animate={feedbackVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <FeedbackSection />
+      </motion.div>
     </>
   )
 }

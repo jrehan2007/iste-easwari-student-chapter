@@ -86,21 +86,21 @@ export default function Hero() {
         </span>
       </motion.div>
 
-      <div className="container-page relative z-10 grid w-full items-center gap-6 py-10 sm:gap-8 sm:py-14 md:grid-cols-2 lg:py-16">
+      <div className="container-page relative z-10 grid w-full items-center gap-8 py-10 sm:gap-10 sm:py-14 md:grid-cols-2 lg:gap-14 lg:py-16">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="tracking-wide text-turkish-dark dark:text-turkish-light">Easwari Engineering College · Ramapuram</p>
-          <h1 className="font-display mt-3 text-4xl leading-tight text-ink dark:text-white sm:text-5xl md:text-6xl">
+          <p className="text-xs font-medium tracking-wide text-turkish-dark dark:text-turkish-light sm:text-sm">Easwari Engineering College · Ramapuram</p>
+          <h1 className="font-display mt-2.5 text-3xl font-bold leading-[1.12] text-ink dark:text-white sm:text-4xl md:text-5xl lg:text-5xl">
             Indian Society for<br />Technical Education
           </h1>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-ink/80 dark:text-[#E8D9A0] sm:mt-5 sm:text-lg">
+          <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-ink/80 dark:text-[#E8D9A0] sm:mt-4 sm:text-base lg:text-lg">
             The student chapter that turns classroom engineering into real-world projects — hackathons,
             workshops, industry sessions and a community that continues beyond the certificate.
           </p>
-          <p className="mt-4 text-xs tracking-[0.18em] text-gold-deep dark:text-gold-light sm:text-sm">
+          <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-gold-deep dark:text-gold-light sm:text-sm">
             INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
           </p>
           <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
@@ -120,9 +120,9 @@ export default function Hero() {
           transition={{ duration: 1.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="hero-logo-interactive relative">
-            <div className="absolute -inset-6 rounded-full border border-ink/15 dark:border-white/15 sm:-inset-8" />
-            <div className="absolute -inset-12 hidden rounded-full border border-ink/[0.07] dark:border-white/[0.07] sm:block sm:-inset-16" />
-            <IsteMark shine delay={1.2} className="relative h-48 w-48 sm:h-72 sm:w-72 md:h-80 md:w-80 lg:h-[22rem] lg:w-[22rem] xl:h-[24rem] xl:w-[24rem]" />
+            <div className="absolute -inset-5 rounded-full border border-ink/15 dark:border-white/15 sm:-inset-6 lg:-inset-8" />
+            <div className="absolute -inset-10 rounded-full border border-ink/[0.07] dark:border-white/[0.07] sm:-inset-12 lg:-inset-14" />
+            <IsteMark shine delay={1.2} className="relative h-48 w-48 sm:h-64 sm:w-64 md:h-72 md:w-72 lg:h-80 lg:w-80 xl:h-[22rem] xl:w-[22rem]" />
             {/* Light sweep: its own circle-clipped layer, so the seal's halo stays unclipped */}
             <span aria-hidden className="hero-emblem-shine pointer-events-none absolute inset-0" />
           </div>
