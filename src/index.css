@@ -12,6 +12,9 @@
   --hero-gold: #C9A227;
   /* Dark electric blue for the glowing card edges (Events, priority events, membership card) */
   --event-glow: 37 99 235;
+  /* Member dashboard cards: deep red blending into gold */
+  --member-red: 185 28 28;   /* #B91C1C */
+  --member-gold: 201 162 39; /* #C9A227 */
 }
 
 html {
@@ -274,6 +277,33 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
     #0A0A0A;
 }
 
+/* Content cards in the member dashboard (priority events, exclusive archive):
+   a dark card with a thin red-to-gold gradient border, and a soft warm
+   red-and-gold light around it only on hover. The gradient border is drawn by
+   layering two backgrounds: the card fill inside the padding box, the gradient
+   underneath it showing through the transparent 1px border. */
+.member-content-card,
+.event-card.event-card-member {
+  --member-fill: linear-gradient(155deg, rgba(12, 15, 22, 0.98) 0%, rgba(6, 8, 12, 0.98) 38%, rgba(0, 0, 0, 0.99) 100%);
+  border: 1px solid transparent;
+  background:
+    var(--member-fill) padding-box,
+    linear-gradient(135deg, rgb(var(--member-red) / 0.65), rgb(var(--member-gold) / 0.65)) border-box;
+  box-shadow: none;
+  transition: box-shadow 260ms ease;
+}
+.member-content-card:hover,
+.member-content-card:focus-within,
+.event-card.event-card-member:hover,
+.event-card.event-card-member:focus-within {
+  transform: none;
+  border-color: transparent; /* keep the gradient border showing */
+  /* red light from the top-left, gold from the bottom-right: the same gradient, softly */
+  box-shadow:
+    -6px -4px 22px -4px rgb(var(--member-red) / 0.32),
+    6px 4px 22px -4px rgb(var(--member-gold) / 0.3);
+}
+
 .member-panel {
   border: 1px solid rgb(201 162 39 / 0.36);
   background: rgb(10 10 10 / 0.78);
@@ -371,6 +401,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 
 .priority-carousel:focus-visible { outline: 2px solid #E8CE72; outline-offset: 6px; }
 .priority-carousel.is-dragging { cursor: grabbing; touch-action: none; }
+/* The card tracks the finger directly while dragging, then eases into place */
+.priority-carousel.is-dragging .priority-event-card { transition: opacity 400ms ease; }
 
 .priority-carousel-shell {
   position: relative;
@@ -397,154 +429,17 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   top: 18px;
   width: min(390px, 72vw);
   min-height: 355px;
-  transform: translate3d(calc(-50% + var(--carousel-x)), var(--carousel-y), 0) rotate(var(--carousel-rotate)) scale(var(--carousel-scale));
-  transform-origin: center center;
+  /* One flat card at a time; neighbours slide in from the side */
+  transform: translate3d(calc(-50% + var(--carousel-x)), 0, 0);
   opacity: var(--carousel-opacity);
-  filter: blur(var(--carousel-blur)) saturate(0.9);
-  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms ease, filter 500ms ease, box-shadow 500ms ease;
-  will-change: transform, opacity, filter;
+  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1), opacity 400ms ease;
+  will-change: transform, opacity;
   pointer-events: none;
 }
 
 .priority-event-card.is-active {
   z-index: 20;
   pointer-events: auto;
-  filter: blur(0) saturate(1.08);
-}
-
-.priority-event-card-inner {
-  position: relative;
-  min-height: 355px;
-  border-radius: 28px;
-  border: 1px solid rgba(201, 162, 39, 0.42);
-  background: linear-gradient(155deg, rgba(12, 15, 22, 0.98) 0%, rgba(6, 8, 12, 0.98) 38%, rgba(0, 0, 0, 0.99) 100%);
-  padding: 24px 22px 22px;
-  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-}
-
-.priority-event-card-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, rgba(232, 206, 114, 0.08), transparent 28%, transparent 68%, rgba(232, 206, 114, 0.04));
-  pointer-events: none;
-}
-
-.priority-event-card-inner::after {
-  content: '';
-  position: absolute;
-  inset: 11px 10px auto 10px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(232, 206, 114, 0.8), transparent);
-  pointer-events: none;
-}
-
-.priority-event-card.is-active .priority-event-card-inner {
-  border-color: rgb(var(--event-glow) / 0.75);
-  box-shadow:
-    0 0 0 1px rgb(var(--event-glow) / 0.18),
-    0 0 18px rgb(var(--event-glow) / 0.4),
-    0 0 42px rgb(var(--event-glow) / 0.16),
-    inset 0 0 18px rgb(var(--event-glow) / 0.12),
-    0 28px 80px rgba(0, 0, 0, 0.52);
-}
-
-/* Same dark-blue edge light and hover lift as the Events page cards */
-.priority-event-card .priority-event-card-inner {
-  border-color: rgb(var(--event-glow) / 0.4);
-  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
-}
-.priority-event-card.is-active:hover .priority-event-card-inner,
-.priority-event-card.is-active:focus-within .priority-event-card-inner {
-  transform: translateY(-4px);
-  border-color: rgb(96 165 250 / 0.9);
-  box-shadow:
-    0 0 0 1px rgb(var(--event-glow) / 0.35),
-    0 0 26px rgb(var(--event-glow) / 0.55),
-    0 0 64px rgb(var(--event-glow) / 0.25),
-    inset 0 0 22px rgb(var(--event-glow) / 0.18),
-    0 28px 80px rgba(0, 0, 0, 0.52);
-}
-
-.priority-event-card-top {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.priority-event-label {
-  margin: 0;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(232, 206, 114, 0.82);
-}
-
-.priority-event-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(232, 206, 114, 0.7);
-  background: rgba(201, 162, 39, 0.08);
-  border-radius: 999px;
-  padding: 7px 10px;
-  color: #F2D98A;
-  font-size: 9px;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  box-shadow: inset 0 0 12px rgba(201, 162, 39, 0.06);
-}
-
-.priority-event-title {
-  position: relative;
-  z-index: 1;
-  margin-top: 22px;
-  font-size: clamp(1.9rem, 2vw, 2.5rem);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.02;
-  color: #f8f5ef;
-  text-transform: uppercase;
-}
-
-.priority-event-meta {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.priority-event-detail {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: 0.96rem;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.priority-event-icon {
-  color: #E8CE72;
-  flex-shrink: 0;
-}
-
-.priority-event-note {
-  position: relative;
-  z-index: 1;
-  margin-top: 22px;
-  border-top: 1px solid rgba(232, 206, 114, 0.18);
-  padding-top: 12px;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #E8CE72;
 }
 
 .priority-register-button {
@@ -658,15 +553,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 @media (max-width: 900px) {
   .priority-carousel-track { height: 374px; }
   .priority-event-card { width: min(340px, 74vw); }
-  .priority-event-card-inner { min-height: 330px; }
 }
 
 @media (max-width: 768px) {
   .priority-carousel-shell { gap: 0.4rem; }
   .priority-carousel-track { height: 330px; width: min(100%, 620px); }
   .priority-event-card { width: min(300px, 68vw); }
-  .priority-event-card-inner { min-height: 300px; padding: 20px 18px 18px; }
-  .priority-event-title { font-size: clamp(1.5rem, 4vw, 2rem); }
   .priority-carousel-arrow { height: 38px; width: 38px; }
 }
 
@@ -675,10 +567,6 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   .priority-carousel-shell { gap: 0.1rem; }
   .priority-carousel-track { height: 310px; }
   .priority-event-card { width: min(270px, 70vw); }
-  .priority-event-card-inner { min-height: 283px; padding: 18px 16px 16px; border-radius: 24px; }
-  .priority-event-label { letter-spacing: 0.14em; }
-  .priority-event-badge { padding: 6px 8px; }
-  .priority-event-detail { font-size: 0.87rem; }
   .priority-register-button { width: 100%; justify-content: center; }
   .priority-carousel-hint { letter-spacing: 0.08em; }
 }
@@ -686,7 +574,6 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .priority-carousel,
   .priority-event-card,
-  .priority-event-card-inner,
   .priority-register-button,
   .priority-register-arrow,
   .priority-carousel-arrow,
@@ -868,6 +755,28 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .event-card { transition: none; }
   .event-card:hover, .event-card:focus-within { transform: none; }
+}
+
+/* Member dashboard variant (priority events): the same card with the member
+   dashboard's red-and-gold edge, no lift, matching the archive cards. */
+.event-card.event-card-member {
+  /* Border, fill and hover light: see .member-content-card */
+  --card-glow: var(--member-gold);
+  --card-edge: 232 206 114;
+}
+.event-card-member .event-card-banner {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(180deg, rgb(201 162 39 / 0.12), #050505);
+}
+.event-card-member .event-card-meta svg { color: #E8CE72; }
+.event-card-member-note {
+  margin-top: 0.85rem;
+  border-top: 1px solid rgb(232 206 114 / 0.18);
+  padding-top: 0.7rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #E8CE72;
 }
 
 /* Red variant for the Pin Board and Gallery */

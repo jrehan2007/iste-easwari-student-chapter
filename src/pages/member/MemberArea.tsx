@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
-import { ArrowRight, Award, BookOpen, CalendarDays, IdCard, MapPin, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards, MoveHorizontal } from 'lucide-react'
+import { ArrowRight, Award, BookOpen, IdCard, Settings, Ticket, LogOut, Download, Plus, QrCode, ShieldCheck, TicketCheck, WalletCards, MoveHorizontal } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
@@ -11,6 +11,7 @@ import { supabase } from '../../lib/supabase'
 import { EaswariMark, IsteMark } from '../../components/Logo'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 import LiveTicker from '../../components/LiveTicker'
+import EventCard from '../../components/EventCard'
 import { getMemberVerificationUrl } from '../../lib/url'
 import type { MemberRecord } from '../../lib/types'
 
@@ -359,6 +360,29 @@ function PriorityEventCarousel({ events }: { events: Awaited<ReturnType<typeof a
   const moved = useRef(false)
   const pointerId = useRef<number | null>(null)
 
+  // The cards are absolutely positioned, so the track can't size itself. Make it
+  // reach the lowest point of any card as drawn — the side cards sit lower and
+  // tilted in the arc — so nothing overlaps the dots underneath. Re-measured when
+  // a card's size changes and after each slide animation settles.
+  const track = useRef<HTMLDivElement>(null)
+  const [trackHeight, setTrackHeight] = useState<number>()
+  useEffect(() => {
+    const el = track.current
+    if (!el) return
+    const measure = () => {
+      const cards = [...el.querySelectorAll<HTMLElement>('.priority-event-card')]
+      if (!cards.length) return
+      const top = el.getBoundingClientRect().top
+      const lowest = Math.max(...cards.map((c) => c.getBoundingClientRect().bottom))
+      setTrackHeight(Math.ceil(lowest - top) + 16)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    el.querySelectorAll('.priority-event-card').forEach((c) => observer.observe(c))
+    el.addEventListener('transitionend', measure)
+    return () => { observer.disconnect(); el.removeEventListener('transitionend', measure) }
+  }, [events])
+
   function move(direction: 1 | -1) {
     if (!events.length) return
     setActiveIndex((current) => (current + direction + events.length) % events.length)
@@ -427,30 +451,21 @@ function PriorityEventCarousel({ events }: { events: Awaited<ReturnType<typeof a
           <span aria-hidden="true">‹</span>
         </button>
 
-        <div className="priority-carousel-track">
+        <div ref={track} className="priority-carousel-track" style={trackHeight ? { height: trackHeight } : undefined}>
           {events.map((event, index) => {
             const position = relativeIndex(index)
             const isActive = position === 0
             const early = event.public_opens_at && new Date(event.public_opens_at) > new Date()
-            const x = Number.isFinite(position) ? position * 210 + dragOffset * 0.46 : 0
-            const y = Number.isFinite(position) ? Math.abs(position) * 46 + (position === 0 ? 0 : 18) : 0
-            const rotation = Number.isFinite(position) ? position * 16 : 0
-            const scale = isActive ? 1 : position === 1 || position === -1 ? 0.84 : 0.7
-            const opacity = isActive ? 1 : position === 1 || position === -1 ? 0.85 : 0.55
-            const blur = isActive ? 0 : Math.abs(position) > 1 ? 0.4 : 0
-
+            // A flat slide: the front card sits in the middle and follows a drag;
+            // the others wait one card-width (plus a gap) to either side, hidden,
+            // and slide in when they become the front card.
             const style = {
-              '--carousel-x': `${Number.isFinite(x) ? x : 0}px`,
-              '--carousel-y': `${Number.isFinite(y) ? y : 0}px`,
-              '--carousel-scale': `${Number.isFinite(scale) ? scale : 1}`,
-              '--carousel-rotate': `${Number.isFinite(rotation) ? rotation : 0}deg`,
-              '--carousel-opacity': `${Number.isFinite(opacity) ? opacity : 1}`,
-              '--carousel-blur': `${Number.isFinite(blur) ? blur : 0}px`,
-              zIndex: isActive ? 20 : Math.max(1, 12 - Math.abs(position)),
+              '--carousel-x': `calc(${position * 110}% + ${dragOffset}px)`,
+              '--carousel-opacity': isActive ? 1 : 0,
+              zIndex: isActive ? 2 : 1,
             } as React.CSSProperties
 
             const registrationHref = event.google_form_url || `/events/${event.id}/register`
-            const externalLink = /^https?:\/\//i.test(registrationHref)
 
             return (
               <article
@@ -465,53 +480,15 @@ function PriorityEventCarousel({ events }: { events: Awaited<ReturnType<typeof a
                   }
                 }}
               >
-                <div className="priority-event-card-inner">
-                  <div className="priority-event-card-top">
-                    <p className="priority-event-label">Priority access</p>
-                    {event.member_discount_pct ? (
-                      <span className="priority-event-badge">{event.member_discount_pct}% OFF</span>
-                    ) : null}
-                  </div>
-
-                  <h2 className="dash priority-event-title">{event.title}</h2>
-
-                  <div className="priority-event-meta">
-                    <p className="priority-event-detail"><CalendarDays size={15} className="priority-event-icon" />{new Date(event.starts_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    <p className="priority-event-detail"><MapPin size={15} className="priority-event-icon" />{event.venue}</p>
-                  </div>
-
-                  {early && (
-                    <p className="priority-event-note">Members first · public from {new Date(event.public_opens_at!).toLocaleDateString('en-IN')}</p>
-                  )}
-
-                  {externalLink ? (
-                    <a
-                      href={registrationHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      tabIndex={isActive ? 0 : -1}
-                      onClick={(clickEvent) => {
-                        if (moved.current) clickEvent.preventDefault()
-                      }}
-                      className="priority-register-button group"
-                    >
-                      Register now
-                      <ArrowRight size={16} className="priority-register-arrow" />
-                    </a>
-                  ) : (
-                    <Link
-                      to={registrationHref}
-                      tabIndex={isActive ? 0 : -1}
-                      onClick={(clickEvent) => {
-                        if (moved.current) clickEvent.preventDefault()
-                      }}
-                      className="priority-register-button group"
-                    >
-                      Register now
-                      <ArrowRight size={16} className="priority-register-arrow" />
-                    </Link>
-                  )}
-                </div>
+                <EventCard
+                  event={event}
+                  variant="member"
+                  kicker="Priority access"
+                  note={early ? `Members first · public from ${new Date(event.public_opens_at!).toLocaleDateString('en-IN')}` : undefined}
+                  registerHref={registrationHref}
+                  buttonTabIndex={isActive ? 0 : -1}
+                  onButtonClick={(clickEvent) => { if (moved.current) clickEvent.preventDefault() }}
+                />
               </article>
             )
           })}
@@ -714,7 +691,7 @@ function Archive() {
             <h2 className="dash text-lg font-semibold">{labels[g]}</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {items.map((r) => (
-                <li key={r.id} className="member-panel p-4">
+                <li key={r.id} className="member-content-card rounded-lg p-4">
                   <p className="dash font-semibold">{r.title}</p>
                   {r.description && <p className="mt-1 text-sm text-white/60">{r.description}</p>}
                   <a href={r.external_url || r.file_url} target="_blank" rel="noreferrer"
