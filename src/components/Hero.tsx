@@ -82,32 +82,33 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden text-center"
         initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}>
-        <span className="hero-word-layer hero-iste-mark inline-block whitespace-nowrap text-[clamp(9rem,32vw,30rem)] font-bold leading-none tracking-[0.08em]">
+        <span className="hero-word-layer hero-iste-mark inline-block select-none whitespace-nowrap text-[clamp(4.5rem,24vw,26rem)] font-bold leading-none tracking-[0.08em]">
           ISTE
         </span>
       </motion.div>
 
-      <div className="container-page relative z-10 grid w-full items-center gap-8 py-10 sm:gap-10 sm:py-14 md:grid-cols-2 lg:gap-14 lg:py-16">
+      <div className="container-page relative z-10 grid w-full items-center gap-8 py-8 sm:gap-10 sm:py-14 md:grid-cols-2 lg:gap-14 lg:py-16">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-start text-left"
         >
           <p className="text-xs font-medium tracking-wide text-turkish-dark dark:text-turkish-light sm:text-sm">Easwari Engineering College · Ramapuram</p>
-          <h1 className="font-display mt-2.5 text-3xl font-bold leading-[1.12] text-ink dark:text-white sm:text-4xl md:text-5xl lg:text-5xl">
-            Indian Society for<br />Technical Education
+          <h1 className="font-display mt-2 text-2xl xs:text-3xl font-bold leading-[1.15] text-ink dark:text-white sm:text-4xl md:text-5xl lg:text-5xl">
+            Indian Society for<br className="hidden xs:inline" /> Technical Education
           </h1>
-          <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-ink/80 dark:text-[#E8D9A0] sm:mt-4 sm:text-base lg:text-lg">
+          <p className="mt-3 max-w-lg text-xs leading-relaxed text-ink/80 dark:text-[#E8D9A0] xs:text-sm sm:mt-4 sm:text-base lg:text-lg">
             The student chapter that turns classroom engineering into real-world projects — hackathons,
             workshops, industry sessions and a community that continues beyond the certificate.
           </p>
-          <p className="mt-3 text-xs font-semibold tracking-[0.16em] text-gold-deep dark:text-gold-light sm:text-sm">
+          <p className="mt-2.5 text-[11px] font-semibold tracking-[0.08em] text-gold-deep dark:text-gold-light xs:text-xs sm:mt-3 sm:text-sm sm:tracking-[0.16em]">
             INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
           </p>
-          <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
-            <Link to="/events" className="btn-primary hero-interactive">See upcoming events</Link>
+          <div className="mt-5 flex w-full flex-col gap-3 xs:w-auto xs:flex-row sm:mt-8">
+            <Link to="/events" className="btn-primary hero-interactive w-full text-center xs:w-auto">See upcoming events</Link>
             <Link to="/membership"
-              className="btn hero-interactive border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
+              className="btn hero-interactive w-full text-center xs:w-auto border border-ink/30 text-ink hover:border-turkish hover:text-turkish-dark dark:border-white/40 dark:text-white dark:hover:text-turkish-light">
               Get membership
             </Link>
           </div>
@@ -121,9 +122,9 @@ export default function Hero() {
           transition={{ duration: 1.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="hero-logo-interactive relative">
-            <div className="absolute -inset-5 rounded-full border border-ink/15 dark:border-white/15 sm:-inset-6 lg:-inset-8" />
-            <div className="absolute -inset-10 rounded-full border border-ink/[0.07] dark:border-white/[0.07] sm:-inset-12 lg:-inset-14" />
-            <IsteMark shine delay={1.2} className="relative h-48 w-48 sm:h-64 sm:w-64 md:h-72 md:w-72 lg:h-80 lg:w-80 xl:h-[22rem] xl:w-[22rem]" />
+            <div className="absolute -inset-3 rounded-full border border-ink/15 dark:border-white/15 sm:-inset-6 lg:-inset-8" />
+            <div className="absolute -inset-6 rounded-full border border-ink/[0.07] dark:border-white/[0.07] sm:-inset-12 lg:-inset-14" />
+            <IsteMark shine delay={1.2} className="relative h-40 w-40 xs:h-48 xs:w-48 sm:h-64 sm:w-64 md:h-72 md:w-72 lg:h-80 lg:w-80 xl:h-[22rem] xl:w-[22rem]" />
             {/* Light sweep: its own circle-clipped layer, so the seal's halo stays unclipped */}
             <span aria-hidden className="hero-emblem-shine pointer-events-none absolute inset-0" />
           </div>

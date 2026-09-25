@@ -95,22 +95,22 @@ export default function IntroGate({ onDone }: { onDone: () => void }) {
         className="h-full w-full object-contain"
       />
 
-      <div className="absolute bottom-6 right-6 flex gap-2">
+      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 flex gap-2">
         <button onClick={toggleSound}
           aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
-          className="rounded-full border border-white/30 bg-black/40 p-3 text-white backdrop-blur transition hover:border-white/70">
-          {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          className="rounded-full border border-white/30 bg-black/40 p-2.5 sm:p-3 text-white backdrop-blur transition hover:border-white/70">
+          {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
         <button onClick={finish}
-          className="flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-4 py-3 text-sm text-white backdrop-blur transition hover:border-white/70">
-          <SkipForward size={16} /> Skip
+          className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/30 bg-black/40 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white backdrop-blur transition hover:border-white/70">
+          <SkipForward size={15} /> Skip
         </button>
       </div>
 
       {muted && (
         <motion.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
-          className="pointer-events-none absolute bottom-24 right-6 text-xs tracking-wide text-white/60">
+          className="pointer-events-none absolute bottom-16 right-4 sm:bottom-24 sm:right-6 text-[11px] sm:text-xs tracking-wide text-white/60">
           Tap the speaker for sound
         </motion.p>
       )}

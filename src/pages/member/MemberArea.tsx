@@ -70,11 +70,11 @@ export default function MemberArea() {
               <p className="font-serif text-xs text-white/50">Indian Society for Technical Education</p>
             </div>
           </Link>
-          <div className="flex items-center gap-4 font-serif text-sm">
-            <span className="text-white/60">{email}</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 font-serif text-xs sm:text-sm">
+            <span className="max-w-[180px] sm:max-w-none truncate text-white/60">{email}</span>
             <button onClick={signOut}
-              className="flex items-center gap-2 border border-gold/50 px-3 py-1.5 text-gold-light hover:bg-gold/10">
-              <LogOut size={16} /> Sign out
+              className="flex items-center gap-1.5 sm:gap-2 border border-gold/50 px-2.5 py-1 sm:px-3 sm:py-1.5 text-gold-light hover:bg-gold/10">
+              <LogOut size={15} /> Sign out
             </button>
           </div>
         </div>
@@ -82,8 +82,8 @@ export default function MemberArea() {
 
       <LiveTicker member />
 
-      <div className="container-page relative z-10 grid gap-8 py-10 lg:grid-cols-[230px_1fr]">
-        <nav className="flex gap-2 overflow-x-auto lg:flex-col">
+      <div className="container-page relative z-10 grid gap-8 py-6 sm:py-10 lg:grid-cols-[230px_1fr]">
+        <nav className="flex gap-2 overflow-x-auto pb-1 max-w-full lg:flex-col">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`member-tab flex shrink-0 items-center gap-2 px-4 py-2.5 text-left transition ${
