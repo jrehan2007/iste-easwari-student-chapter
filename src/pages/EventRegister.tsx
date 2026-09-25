@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAsync } from '../lib/useAsync'
 import { getEvent } from '../lib/api'
+import { formatEventWhen } from '../lib/datetime'
 
 export default function EventRegister() {
   const { id } = useParams()
@@ -13,7 +14,7 @@ export default function EventRegister() {
     <div className="container-page py-14">
       <Link to="/events" className="text-turkish-dark hover:underline dark:text-turkish-light">← Back to events</Link>
       <h1 className="section-title mt-4">Register — {event.title}</h1>
-      <p className="muted mt-2">{event.venue} · {new Date(event.starts_at).toLocaleString('en-IN')}</p>
+      <p className="muted mt-2">{event.venue} · {formatEventWhen(event.starts_at, event.ends_at)}</p>
       {Boolean(event.member_discount_pct) && (
         <p className="mt-3 rounded-sm bg-turkish-mist px-4 py-2 text-turkish-dark dark:bg-night-soft dark:text-turkish-light">
           Members pay {event.member_discount_pct}% less and register two days before this opens publicly.

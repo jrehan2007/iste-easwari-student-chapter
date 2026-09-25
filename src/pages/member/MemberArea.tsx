@@ -301,7 +301,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
               <div aria-hidden className="membership-card-orbit" />
               <div className="relative flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
-                  <EaswariMark className="h-7 w-[5.1rem] sm:h-8 sm:w-[5.5rem]" plate /><IsteMark className="h-10 w-10 sm:h-11 sm:w-11" />
+                  <EaswariMark className="h-7 w-[5.1rem] sm:h-8 sm:w-[5.5rem]" tone="plate" /><IsteMark className="h-10 w-10 sm:h-11 sm:w-11" />
                   <div className="min-w-0 leading-tight"><p className="dash text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-light sm:text-sm">ISTE Student Chapter</p><p className="truncate text-[9px] text-white/55 sm:text-[11px]">Easwari Engineering College, Ramapuram</p></div>
                 </div>
                 <ShieldCheck className="shrink-0 text-gold-light/80" size={21} aria-label="Verified membership" />

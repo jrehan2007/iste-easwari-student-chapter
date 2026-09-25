@@ -56,9 +56,10 @@ Deno.serve(async (req) => {
         upsert: true,
       })
       const qr = admin.storage.from('passes').getPublicUrl(qrPath).data.publicUrl
+      // The function runs on a UTC server: pin the time to IST or 1:30 PM reads as 8:00 AM
       const when = new Date(event.starts_at).toLocaleString('en-IN', {
-        dateStyle: 'full', timeStyle: 'short',
-      })
+        dateStyle: 'full', timeStyle: 'short', timeZone: 'Asia/Kolkata',
+      }).replace(/\b(am|pm)\b/i, (m) => m.toUpperCase())
 
       const html = `
         <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#0E1B33">

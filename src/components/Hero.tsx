@@ -58,7 +58,8 @@ export default function Hero() {
           shimmer={1.5}
           glow={2}
           flowDirection="down"
-          opacity={1}
+          // Softer on the white light-mode background
+          opacity={isDark ? 1 : 0.5}
           mouseInteraction={!isMobile}
           mouseStrength={1}
           mouseRadius={0.35}

@@ -9,7 +9,8 @@ import { Panel, Table, Row, Action, Danger, useSaver } from './panels'
 import QrPanel from './QrPanel'
 import { isInstagramLink, normalizeExternalLink } from '../../lib/url'
 import { eventPhase } from '../../lib/eventStatus'
-import type { Lane, MembershipSettings, Domain, Tenure, TeamMember } from '../../lib/types'
+import { formatEventWhen } from '../../lib/datetime'
+import type { ChapterEvent, Lane, MembershipSettings, Domain, Tenure, TeamMember } from '../../lib/types'
 import DashboardVideoBackground from '../../components/DashboardVideoBackground'
 
 type Tab = 'events' | 'passes' | 'membership' | 'settings' | 'roles'
@@ -124,8 +125,8 @@ function EventsPanel() {
   const { data, reload } = useAsync(() => api.listEvents(), [])
   const { run, banner } = useSaver()
   const blank = {
-    title: '', description: '', location: '', venue: '', starts_at: '', ends_at: '',
-    google_form_url: '', member_discount_pct: 0,
+    id: '', title: '', description: '', location: '', venue: '', starts_at: '', ends_at: '',
+    google_form_url: '', member_discount_pct: 0, banner_url: '',
     member_opens_at: '', public_opens_at: '',
   }
   const [form, setForm] = useState<Record<string, string | number>>(blank)
@@ -133,6 +134,24 @@ function EventsPanel() {
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm({ ...form, [k]: e.target.value })
+
+  // A stored timestamp as the value a datetime-local box expects (this browser's clock)
+  const toInput = (iso?: string | null) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return Number.isNaN(d.getTime()) ? '' : new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+  }
+
+  function edit(e: ChapterEvent) {
+    setForm({
+      id: e.id, title: e.title ?? '', description: e.description ?? '', location: e.location ?? '', venue: e.venue ?? '',
+      starts_at: toInput(e.starts_at), ends_at: toInput(e.ends_at),
+      google_form_url: e.google_form_url ?? '', member_discount_pct: e.member_discount_pct ?? 0, banner_url: e.banner_url ?? '',
+      member_opens_at: toInput(e.member_opens_at), public_opens_at: toInput(e.public_opens_at),
+    })
+    setBannerFile(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   // Default the public window to a week after members get access.
   function onMemberOpens(v: string) {
@@ -178,15 +197,17 @@ function EventsPanel() {
           <input className="field" type="number" value={form.member_discount_pct as number} onChange={set('member_discount_pct')} />
         </div>
         <div>
-          <label className="label">Banner</label>
+          <label className="label">Banner {form.id && form.banner_url ? <span className="muted">(leave empty to keep the current one)</span> : null}</label>
           <input className="field" type="file" accept="image/*" onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)} />
         </div>
-        <button className="btn-primary sm:col-span-2" onClick={() => run(
+        <button className="btn-primary sm:col-span-2" disabled={!form.title || !form.starts_at} onClick={() => run(
           () => {
             const starts_at = new Date(form.starts_at as string).toISOString()
             const ends_at = form.ends_at ? new Date(form.ends_at as string).toISOString() : null
             return api.saveEvent({
             ...(form as object),
+            id: (form.id as string) || undefined, // blank id = a new event
+            banner_url: (form.banner_url as string) || undefined,
             starts_at,
             ends_at,
             // Stored for anything reading the table directly; the site works it out from the dates.
@@ -195,21 +216,30 @@ function EventsPanel() {
             public_opens_at: form.public_opens_at ? new Date(form.public_opens_at as string).toISOString() : null,
           } as never, banner_file)
           },
-          'Event published.', () => { setForm(blank); setBannerFile(null); reload() })}>
-          Publish event
+          form.id ? 'Event updated.' : 'Event published.', () => { setForm(blank); setBannerFile(null); reload() })}>
+          {form.id ? 'Save changes' : 'Publish event'}
         </button>
+        {form.id && (
+          <button type="button" className="btn-outline sm:col-span-2" onClick={() => { setForm(blank); setBannerFile(null) }}>
+            Cancel editing
+          </button>
+        )}
       </div>
 
       {data?.length ? (
-        <Table head={['Event', 'Status', 'Venue', 'Public from', '']}>
+        <Table head={['Event', 'When', 'Status', 'Venue', 'Public from', '']}>
           {data.map((e) => (
             <Row key={e.id}>
               <td className="p-3">{e.title}</td>
+              <td className="p-3 muted whitespace-nowrap">{formatEventWhen(e.starts_at, e.ends_at)}</td>
               <td className="p-3 capitalize">{e.status}</td>
               <td className="p-3 muted">{e.venue}</td>
               <td className="p-3 muted">{e.public_opens_at ? new Date(e.public_opens_at).toLocaleDateString('en-IN') : 'Immediately'}</td>
               <td className="p-3 text-right">
-                <Danger onClick={() => run(() => api.deleteEvent(e.id), 'Event deleted.', reload)}>Delete</Danger>
+                <div className="flex justify-end gap-3">
+                  <Action onClick={() => edit(e)}>Edit</Action>
+                  <Danger onClick={() => run(() => api.deleteEvent(e.id), 'Event deleted.', reload)}>Delete</Danger>
+                </div>
               </td>
             </Row>
           ))}

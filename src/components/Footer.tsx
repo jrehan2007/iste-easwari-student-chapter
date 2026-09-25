@@ -20,19 +20,20 @@ export default function Footer() {
             <MapPin size={16} className="mt-0.5 shrink-0 text-turkish" />
             <span>Easwari Engineering College<br />Bharathi Salai, Ramapuram<br />Chennai 600089, Tamil Nadu</span>
           </p>
-          <span className="mt-4 inline-flex rounded-sm bg-white px-2 py-1">
-            <EaswariMark className="h-9" plate />
+          <span className="mt-4 inline-flex">
+            <EaswariMark className="h-9" tone="auto" />
           </span>
         </div>
 
         <div className="sm:justify-self-end">
           <p className="text-sm text-ink/70 dark:text-white/70">Follow the chapter</p>
           <div className="mt-3 flex gap-3">
-            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn"
-              className="rounded-sm border border-ink/25 p-2.5 transition hover:border-turkish hover:text-turkish-dark dark:border-white/30 dark:hover:text-turkish-light">
+            {/* No chapter LinkedIn page yet: shown, but switched off */}
+            <span aria-disabled="true" aria-label="LinkedIn (coming soon)" title="LinkedIn — coming soon"
+              className="cursor-not-allowed rounded-sm border border-ink/15 p-2.5 text-ink/35 dark:border-white/15 dark:text-white/30">
               <Linkedin size={20} />
-            </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"
+            </span>
+            <a href="https://www.instagram.com/srm.iste_eec" target="_blank" rel="noreferrer" aria-label="Instagram"
               className="rounded-sm border border-ink/25 p-2.5 transition hover:border-turkish hover:text-turkish-dark dark:border-white/30 dark:hover:text-turkish-light">
               <Instagram size={20} />
             </a>

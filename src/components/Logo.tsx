@@ -105,11 +105,35 @@ export function IsteMark({
   )
 }
 
-/** The college wordmark is dark maroon artwork, so it gets a white plate on dark backgrounds. */
-export function EaswariMark({ className = 'h-11', plate = false }: { className?: string; plate?: boolean }) {
+/**
+ * The college wordmark. The original artwork is dark maroon and black, which
+ * disappears on dark backgrounds, so there are three ways to show it:
+ *   tone="onDark" — the light version (maroon and black lettering turned white,
+ *                   the shield keeps its colours), for backgrounds that are always dark
+ *   tone="auto"   — original colours in light mode, the light version in dark mode
+ *   tone="plate"  — original colours on a white plate; used on the membership card,
+ *                   which is exported to PDF by a renderer that can't swap images
+ */
+export function EaswariMark({ className = 'h-11', tone = 'onDark' }: {
+  className?: string; tone?: 'onDark' | 'auto' | 'plate'
+}) {
+  const alt = 'Easwari Engineering College'
+  if (tone === 'plate')
+    return (
+      <span className="inline-flex items-center rounded-sm bg-white px-2 py-1">
+        <img src="/easwari-logo.webp" alt={alt} className={`${className} object-contain`} />
+      </span>
+    )
+  if (tone === 'auto')
+    return (
+      <span className="inline-flex items-center">
+        <img src="/easwari-logo.webp" alt={alt} className={`${className} object-contain dark:hidden`} />
+        <img src="/easwari-logo-white.png" alt={alt} className={`${className} hidden object-contain dark:block`} />
+      </span>
+    )
   return (
-    <span className={`inline-flex items-center rounded-sm ${plate ? 'bg-white px-2 py-1' : 'bg-white px-2 py-1'}`}>
-      <img src="/easwari-logo.webp" alt="Easwari Engineering College" className={`${className} object-contain`} />
+    <span className="inline-flex items-center">
+      <img src="/easwari-logo-white.png" alt={alt} className={`${className} object-contain`} />
     </span>
   )
 }

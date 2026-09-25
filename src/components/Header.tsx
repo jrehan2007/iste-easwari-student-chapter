@@ -63,7 +63,7 @@ export default function Header() {
         {/* Left: Dual Logos (Easwari then larger circular ISTE logo) */}
         <div className="flex shrink-0 items-center">
           <Link to="/" className="flex items-center gap-2.5 sm:gap-4" onClick={() => setOpen(false)}>
-            <EaswariMark className="h-9 sm:h-10 lg:h-11 xl:h-12 w-auto shrink-0" plate />
+            <EaswariMark className="h-9 sm:h-10 lg:h-11 xl:h-12 w-auto shrink-0" />
             <IsteMark className="h-11 w-11 sm:h-12 sm:w-12 lg:h-[58px] lg:w-[58px] xl:h-[64px] xl:w-[64px] shrink-0" />
           </Link>
         </div>

@@ -3,24 +3,8 @@ import { Link } from 'react-router-dom'
 import { MapPin, Clock, Building2, ArrowRight } from 'lucide-react'
 import { IsteMark } from './Logo'
 import { eventEndsAt } from '../lib/eventStatus'
+import { formatEventWhen } from '../lib/datetime'
 import type { ChapterEvent } from '../lib/types'
-
-// Events happen in Chennai, so show their times in IST whatever the viewer's clock says.
-const dateFormat = new Intl.DateTimeFormat('en-IN', {
-  weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata',
-})
-const timeFormat = new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' })
-
-function formatWhen(event: ChapterEvent) {
-  const start = new Date(event.starts_at)
-  if (Number.isNaN(start.getTime())) return ''
-  const end = event.ends_at ? new Date(event.ends_at) : null
-  const sameDay = end && dateFormat.format(end) === dateFormat.format(start)
-  const endPart = !end || Number.isNaN(end.getTime()) ? ''
-    : sameDay ? ` – ${timeFormat.format(end)}`
-    : ` – ${dateFormat.format(end)}`
-  return `${dateFormat.format(start)} · ${timeFormat.format(start)}${endPart}`
-}
 
 /** What to say at the bottom of an ongoing card: before, during or just after the event. */
 function ongoingNote(event: ChapterEvent, now: Date) {
@@ -55,7 +39,7 @@ export default function EventCard({
   onButtonClick?: (e: MouseEvent<HTMLAnchorElement>) => void
   role?: string
 }) {
-  const when = formatWhen(event)
+  const when = formatEventWhen(event.starts_at, event.ends_at)
   // Registration stays open until the event actually starts, including on the day.
   const canRegister = event.status === 'upcoming' || (event.status === 'ongoing' && now < new Date(event.starts_at))
   const venue = event.venue?.trim()

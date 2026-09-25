@@ -114,7 +114,7 @@ export default function VerifyMember() {
       <header className="border-b border-white/10 bg-[#09111F]/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <Link to="/" className="flex items-center gap-2.5 transition hover:opacity-90">
-            <EaswariMark className="h-6 w-auto sm:h-7" plate />
+            <EaswariMark className="h-6 w-auto sm:h-7" />
             <span className="hidden h-5 w-px bg-white/20 sm:block" />
             <IsteMark className="h-7 w-7 sm:h-8 sm:w-8" />
             <div className="hidden min-w-0 flex-col leading-tight sm:flex">

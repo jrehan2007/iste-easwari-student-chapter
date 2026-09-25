@@ -5,6 +5,7 @@ import { Panel, Table, Row, Danger, useSaver } from './panels'
 import { useAsync } from '../../lib/useAsync'
 import * as api from '../../lib/api'
 import { useQrScanner } from '../../lib/useQrScanner'
+import { formatEventWhen } from '../../lib/datetime'
 import type { EventPass, Lane, ScanResult } from '../../lib/types'
 
 /** One printable pass card with its QR. The QR encodes the token only. */
@@ -128,7 +129,7 @@ export default function QrPanel() {
           <div className="grid gap-3 lg:grid-cols-2">
             {issued.map((p) => (
               <PassCard key={p.id} pass={p} eventTitle={event?.title ?? ''} venue={event?.venue}
-                when={event ? new Date(event.starts_at).toLocaleString('en-IN') : undefined} />
+                when={event ? formatEventWhen(event.starts_at, event.ends_at) : undefined} />
             ))}
           </div>
         </>

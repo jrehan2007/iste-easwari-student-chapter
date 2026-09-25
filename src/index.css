@@ -200,6 +200,10 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
   .header-chapter-title-stroke { -webkit-text-stroke-width: 0.06em; }
 }
 
+/* Light mode: no shadow or glow behind the title, just the outline and the gold */
+html:not(.dark) .header-chapter-title-stroke { text-shadow: none; }
+html:not(.dark) .header-chapter-title-fill { filter: none; }
+
 .live-ticker {
   display: flex;
   align-items: stretch;
