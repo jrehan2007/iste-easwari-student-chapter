@@ -198,7 +198,7 @@ export default function Professional() {
 
   if (!list.length)
     return (
-      <div className="container-page py-14">
+      <div className="container-page py-8 sm:py-14">
         <h1 className="section-title">Office Bearers</h1>
         <EmptyState title="No domains yet" hint="Create them in the admin Roles panel, then add people to each." />
       </div>
@@ -206,14 +206,14 @@ export default function Professional() {
 
   if (!availableTenures.length)
     return (
-      <div className="container-page py-14">
+      <div className="container-page py-8 sm:py-14">
         <h1 className="section-title">Office Bearers</h1>
         <EmptyState title="No tenures yet" hint="Office bearer records will appear here once an admin creates a tenure." />
       </div>
     )
 
   return (
-    <div className="container-page py-14">
+    <div className="container-page py-8 sm:py-14">
       {/* Page Header */}
       <h1 className="section-title">Office Bearers</h1>
       <p className="muted mt-3 max-w-2xl">

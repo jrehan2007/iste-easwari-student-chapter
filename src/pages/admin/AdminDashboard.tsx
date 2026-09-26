@@ -41,8 +41,8 @@ export default function AdminDashboard() {
         <p className="muted mt-2">Signed in as {email}</p>
         <div className="rule mt-5" />
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[210px_1fr]">
-          <nav className="dash flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+        <div className="mt-6 grid min-w-0 gap-8 lg:grid-cols-[210px_minmax(0,1fr)]">
+          <nav className="dash w-full min-w-0 max-w-full flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
             {sections.map((s) => (
               <button key={s.id} onClick={() => setTab(s.id)}
                 className={`dash-nav ${tab === s.id
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
             ))}
           </nav>
 
-          <section>
+          <section className="min-w-0">
             {tab === 'events'     && <EventsPanel />}
             {tab === 'passes'     && <QrPanel />}
             {tab === 'membership' && <MembersPanel />}

@@ -8,7 +8,7 @@ export default function PinBoard() {
   const { data, loading } = useAsync(() => listAnnouncements(), [])
 
   return (
-    <div className="container-page py-14">
+    <div className="container-page py-8 sm:py-14">
       <h1 className="section-title">Pin board</h1>
       <p className="muted mt-3 max-w-2xl">
         Chapter notices and reposts from our Instagram, pinned as they happen.

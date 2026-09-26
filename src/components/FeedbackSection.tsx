@@ -32,13 +32,13 @@ export default function FeedbackSection() {
   }
 
   return (
-    <section id="feedback" className="container-page py-16 scroll-mt-28">
+    <section id="feedback" className="container-page py-10 sm:py-16 scroll-mt-28">
       <h2 className="section-title">Feedback</h2>
       <p className="muted mt-3">Goes straight to the President and Vice President.</p>
       <div className="rule mt-4" />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
-        <form onSubmit={submit} className="card space-y-4">
+        <form onSubmit={submit} className="card min-w-0 space-y-4">
           <div>
             <label className="mb-1 block text-sm muted" htmlFor="fb-name">Your name</label>
             <input
@@ -78,7 +78,7 @@ export default function FeedbackSection() {
           {sent && <p className="text-sm text-turkish-dark dark:text-turkish-light font-medium">Sent. Your mail app should also be open with a copy.</p>}
         </form>
 
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <h3 className="text-xl font-semibold text-ink dark:text-white">Find us</h3>
           <p className="muted mt-1 text-sm">Easwari Engineering College, Bharathi Salai, Ramapuram, Chennai 600089.</p>
           <iframe

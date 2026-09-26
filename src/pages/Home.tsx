@@ -41,9 +41,9 @@ export default function Home() {
         initial={{ opacity: 0, y: 36 }}
         animate={announcementsVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="container-page py-16"
+        className="container-page py-10 sm:py-16"
       >
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end sm:gap-4">
           <h2 className="section-title">Live Wire</h2>
           <Link to="/pin-board" className="text-turkish-dark hover:underline dark:text-turkish-light">Open the pin board</Link>
         </div>
@@ -73,7 +73,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 36 }}
         animate={calendarVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-[#E8F1F4] py-16 dark:bg-night-soft"
+        className="bg-[#E8F1F4] py-10 dark:bg-night-soft sm:py-16"
       >
         <div className="container-page">
           <h2 className="section-title">Next on the calendar</h2>

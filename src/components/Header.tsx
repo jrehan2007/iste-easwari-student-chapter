@@ -137,7 +137,7 @@ export default function Header() {
 
       {/* Sub-bar: Chapter Title */}
       <div className="border-t border-ink/10 bg-[#DCEBF0] px-4 py-2 text-center dark:border-white/10 dark:bg-[#0E1E36] sm:px-6 sm:py-3">
-        <h1 className="header-chapter-title font-display text-xl font-semibold tracking-wide leading-snug sm:text-2xl sm:leading-tight md:text-3xl lg:text-4xl">
+        <h1 className="header-chapter-title w-full font-display text-lg font-semibold tracking-wide leading-snug sm:w-auto sm:text-2xl sm:leading-tight md:text-3xl lg:text-4xl">
           {/* Two stacked layers: a black outline behind, the gold gradient on top */}
           <span aria-hidden className="header-chapter-title-stroke">ISTE – Easwari Student Chapter</span>
           <span className="header-chapter-title-fill">ISTE – Easwari Student Chapter</span>

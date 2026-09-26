@@ -31,7 +31,7 @@ export default function Events() {
   const list = tab === 'past' ? inTab.reverse() : inTab
 
   return (
-    <div className="container-page py-14">
+    <div className="container-page py-8 sm:py-14">
       <h1 className="section-title">Events</h1>
       <div className="rule mt-5" />
 

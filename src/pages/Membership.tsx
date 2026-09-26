@@ -17,9 +17,9 @@ export default function Membership() {
   const open = Boolean(s?.is_open)
 
   return (
-    <div className="container-page py-14">
+    <div className="container-page py-8 sm:py-14">
       <div className="flex items-start justify-between gap-6">
-        <div>
+        <div className="min-w-0">
           <h1 className="section-title">{s?.headline || 'Membership'}</h1>
           {s?.intro && <p className="muted mt-3 max-w-2xl leading-relaxed">{s.intro}</p>}
         </div>
@@ -46,11 +46,11 @@ export default function Membership() {
           )}
         </div>
 
-        <aside className="h-fit border-2 border-gold bg-[#E8F1F4] p-7 text-ink dark:bg-ink dark:text-white">
+        <aside className="h-fit min-w-0 border-2 border-gold bg-[#E8F1F4] p-5 text-ink sm:p-7 dark:bg-ink dark:text-white">
           {open ? (
             <>
               <p className="tracking-widest text-gold-light">MEMBERSHIP</p>
-              <p className="font-display mt-2 text-5xl font-semibold">{s?.price_label}</p>
+              <p className="font-display mt-2 break-words text-4xl font-semibold sm:text-5xl">{s?.price_label}</p>
               {s?.price_note && <p className="mt-2 text-ink/70 dark:text-white/70">{s.price_note}</p>}
               {s?.closes_on && (
                 <p className="mt-3 text-sm text-gold-light">

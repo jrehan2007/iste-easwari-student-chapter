@@ -11,7 +11,7 @@ export default function Gallery() {
   const photos = useAsync(() => (openFolder ? listPhotos(openFolder.id) : Promise.resolve([])), [openFolder?.id])
 
   return (
-    <div className="container-page py-14">
+    <div className="container-page py-8 sm:py-14">
       <h1 className="section-title">Gallery</h1>
       <p className="muted mt-3">Photos are filed by event.</p>
       <div className="rule mt-5" />
@@ -46,7 +46,7 @@ export default function Gallery() {
           <button onClick={() => setOpenFolder(null)} className="mt-6 py-2 text-turkish-dark hover:underline dark:text-turkish-light">
             ← All albums
           </button>
-          <h2 className="mt-2 text-2xl">{openFolder.name}</h2>
+          <h2 className="mt-2 min-w-0 break-words text-2xl">{openFolder.name}</h2>
           {photos.loading ? <p className="muted mt-6">Loading…</p>
             : !photos.data?.length ? <EmptyState title="This album is empty" />
             : (
