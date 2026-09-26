@@ -73,7 +73,7 @@ export default function Login() {
     return (
       <div
         onClick={() => navigate('/')}
-        className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-4 py-10 text-white sm:px-6 md:px-8"
+        className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-3.5 py-8 text-white sm:px-6 md:px-8 sm:py-10"
       >
         <img
           src="/iste-logo.png"
@@ -83,22 +83,22 @@ export default function Login() {
         />
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative z-10 w-full max-w-md cursor-default rounded-2xl border border-white/10 bg-[#111C2E] p-6 shadow-2xl shadow-black/20 sm:p-8"
+          className="relative z-10 w-full max-w-md cursor-default rounded-xl border border-white/10 bg-[#111C2E] p-5 shadow-2xl shadow-black/20 sm:rounded-2xl sm:p-8"
         >
-          <IsteMark shine className="h-12 w-12" />
-          <h1 className="mt-6 font-display text-2xl font-semibold text-white">Set your password</h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/60">
-          Welcome. Choose a password you'll use from now on — the temporary one stops working.
+          <IsteMark shine className="h-10 w-10 sm:h-12 sm:w-12" />
+          <h1 className="mt-5 sm:mt-6 font-display text-xl sm:text-2xl font-semibold text-white">Set your password</h1>
+          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-white/60">
+            Welcome. Choose a password you'll use from now on — the temporary one stops working.
           </p>
-          <div className="mt-6">
-            <label className="mb-2 block text-sm text-white/70" htmlFor="np">New password</label>
-            <input id="np" type="password" className="w-full rounded-full border border-white/15 bg-[#0A1220] px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-turkish" value={newPassword}
+          <div className="mt-5 sm:mt-6">
+            <label className="mb-2 block text-xs sm:text-sm text-white/70" htmlFor="np">New password</label>
+            <input id="np" type="password" className="w-full min-h-[44px] rounded-full border border-white/15 bg-[#0A1220] px-4 py-3 text-sm sm:text-base text-white outline-none transition placeholder:text-white/35 focus:border-turkish" value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && newPassword.length >= 6 && handleSetPassword()} />
             <p className="mt-2 text-xs text-white/45">At least six characters.</p>
           </div>
-          {error && <p className="mt-4 text-sm text-red-300">{error}</p>}
-          <button className="mt-6 w-full rounded-full bg-white px-5 py-3 font-semibold text-[#0A1220] transition hover:bg-turkish-light disabled:cursor-not-allowed disabled:opacity-50" disabled={busy || newPassword.length < 6} onClick={handleSetPassword}>
+          {error && <p className="mt-4 text-xs sm:text-sm text-red-300">{error}</p>}
+          <button className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm sm:text-base font-semibold text-[#0A1220] transition hover:bg-turkish-light disabled:cursor-not-allowed disabled:opacity-50" disabled={busy || newPassword.length < 6} onClick={handleSetPassword}>
             {busy ? 'Setting…' : 'Set password and continue'}
           </button>
         </div>
@@ -109,7 +109,7 @@ export default function Login() {
   return (
     <div
       onClick={() => navigate('/')}
-      className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-4 py-10 text-white sm:px-6 md:px-8"
+      className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-3.5 py-8 text-white sm:px-6 md:px-8 sm:py-10"
     >
       <img
         src="/iste-logo.png"
@@ -119,15 +119,15 @@ export default function Login() {
       />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative z-10 w-full max-w-md cursor-default rounded-2xl border border-white/10 bg-[#111C2E] p-6 shadow-2xl shadow-black/20 sm:p-8"
+        className="relative z-10 w-full max-w-md cursor-default rounded-xl border border-white/10 bg-[#111C2E] p-5 shadow-2xl shadow-black/20 sm:rounded-2xl sm:p-8"
       >
-        <div className="mb-7">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Sign in</h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/55">Welcome back to the ISTE Easwari Student Chapter portal.</p>
+        <div className="mb-6 sm:mb-7">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Sign in</h1>
+          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed text-white/55">Welcome back to the ISTE Easwari Student Chapter portal.</p>
         </div>
 
         {!isSupabaseConfigured && (
-          <p className="mb-5 rounded-xl border border-red-400/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+          <p className="mb-5 rounded-xl border border-red-400/30 bg-red-950/30 px-3.5 py-2.5 text-xs sm:text-sm text-red-200">
             Supabase isn't connected. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to <code>.env</code>,
             then restart the dev server.
           </p>
@@ -138,12 +138,12 @@ export default function Login() {
           <div className="relative">
             <Mail aria-hidden size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
             <input id="email" type="email" placeholder="Email address" autoComplete="email"
-              className="w-full rounded-full border border-white/15 bg-[#0A1220] py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-turkish"
+              className="w-full min-h-[44px] rounded-full border border-white/15 bg-[#0A1220] py-2.5 sm:py-3 pl-11 pr-4 text-sm sm:text-base text-white outline-none transition placeholder:text-white/35 focus:border-turkish"
               value={form.email} onChange={set('email')} />
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-4 sm:mt-5">
           <div className="mb-2 flex items-center justify-between px-1">
             <label className="sr-only" htmlFor="pw">Password</label>
             <span className="text-xs text-white/45">Password</span>
@@ -152,7 +152,7 @@ export default function Login() {
           <div className="relative">
             <LockKeyhole aria-hidden size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
             <input id="pw" type={showPassword ? 'text' : 'password'} placeholder="Password" autoComplete="current-password"
-              className="w-full rounded-full border border-white/15 bg-[#0A1220] py-3 pl-11 pr-12 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-turkish"
+              className="w-full min-h-[44px] rounded-full border border-white/15 bg-[#0A1220] py-2.5 sm:py-3 pl-11 pr-12 text-sm sm:text-base text-white outline-none transition placeholder:text-white/35 focus:border-turkish"
               value={form.password} onChange={set('password')}
               onKeyDown={(e) => e.key === 'Enter' && choice && handleSignIn()} />
             <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}
@@ -163,16 +163,16 @@ export default function Login() {
           {choice === 'member' && <p className="mt-2 px-1 text-xs text-white/45">First time? Use the temporary password from the chapter secretary.</p>}
         </div>
 
-        {error && <p className="mt-4 text-sm text-red-300">{error}</p>}
+        {error && <p className="mt-4 text-xs sm:text-sm text-red-300">{error}</p>}
 
-        <button className="mt-6 w-full rounded-full bg-white px-5 py-3 font-semibold text-[#0A1220] transition duration-300 hover:bg-turkish-light disabled:cursor-not-allowed disabled:opacity-40" disabled={busy || !form.email.trim() || !form.password.trim()}
+        <button className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm sm:text-base font-semibold text-[#0A1220] transition duration-300 hover:bg-turkish-light disabled:cursor-not-allowed disabled:opacity-40" disabled={busy || !form.email.trim() || !form.password.trim()}
           onClick={handleSignIn}>
           {busy ? 'Signing in…' : 'Log in'}
         </button>
 
         <p className="mt-4 text-center text-xs text-white/40">Enter your details above to continue.</p>
 
-        <div className="mt-7 border-t border-white/10 pt-5 text-center text-sm">
+        <div className="mt-6 sm:mt-7 border-t border-white/10 pt-4 sm:pt-5 text-center text-xs sm:text-sm">
           <span className="text-white/45">Signing in as </span>
           <button type="button" onClick={() => { setChoice(choice === 'admin' ? 'member' : 'admin'); setError(null) }} className="font-semibold capitalize text-turkish-light transition hover:text-white">
             {choice ?? 'choose a role'}

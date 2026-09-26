@@ -43,24 +43,24 @@ export default function Home() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="container-page py-10 sm:py-16"
       >
-        <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end sm:gap-4">
+  <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end sm:gap-4">
           <h2 className="section-title">Live Wire</h2>
-          <Link to="/pin-board" className="text-turkish-dark hover:underline dark:text-turkish-light">Open the pin board</Link>
+          <Link to="/pin-board" className="text-sm sm:text-base text-turkish-dark hover:underline dark:text-turkish-light">Open the pin board</Link>
         </div>
-        <div className="rule mt-4" />
+        <div className="rule mt-3 sm:mt-4" />
 
-        {posts.loading ? <p className="muted mt-8">Loading…</p>
+        {posts.loading ? <p className="muted mt-6 sm:mt-8">Loading…</p>
           : !posts.data?.length ? <EmptyState title="No posts yet" hint="Publish one from the admin pin board." />
           : (
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <div className="mt-6 sm:mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {posts.data.map((a) => (
                 <article key={a.id} className="card flex min-w-0 flex-col overflow-hidden">
-                  <p className="text-sm text-turkish-dark dark:text-turkish-light">
+                  <p className="text-xs sm:text-sm text-turkish-dark dark:text-turkish-light">
                     {new Date(a.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                     {a.source === 'instagram' && ' · from Instagram'}
                   </p>
-                  <h3 className="mt-2 text-xl [overflow-wrap:anywhere]">{a.title}</h3>
-                  <p className="muted mt-2 flex-1 [overflow-wrap:anywhere]">{a.body}</p>
+                  <h3 className="mt-2 text-lg sm:text-xl font-semibold [overflow-wrap:anywhere]">{a.title}</h3>
+                  <p className="muted mt-2 flex-1 text-sm sm:text-base [overflow-wrap:anywhere]">{a.body}</p>
                   <AnnouncementLink href={a.external_url} className="mt-4 self-start" />
                 </article>
               ))}
@@ -73,25 +73,27 @@ export default function Home() {
         initial={{ opacity: 0, y: 36 }}
         animate={calendarVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-[#E8F1F4] py-10 dark:bg-night-soft sm:py-16"
+        className="bg-[#E8F1F4] py-10 sm:py-16 dark:bg-night-soft"
       >
         <div className="container-page">
           <h2 className="section-title">Next on the calendar</h2>
-          <div className="rule mt-4" />
-          {upcoming.loading ? <p className="muted mt-8">Loading…</p>
+          <div className="rule mt-3 sm:mt-4" />
+          {upcoming.loading ? <p className="muted mt-6 sm:mt-8">Loading…</p>
             : !upcoming.data?.length ? <EmptyState title="No upcoming events" hint="Add one from the admin dashboard." />
             : (
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
+              <div className="mt-6 sm:mt-8 grid gap-5 sm:grid-cols-2">
                 {upcoming.data.slice(0, 4).map((e) => (
-                  <article key={e.id} className="card">
-                    <h3 className="text-2xl">{e.title}</h3>
-                    <p className="muted mt-2">{e.description}</p>
-                    <dl className="muted mt-4 space-y-1 text-sm">
-                      <div><dt className="inline font-bold">Venue: </dt><dd className="inline">{e.venue}</dd></div>
-                      <div><dt className="inline font-bold">When: </dt>
-                        <dd className="inline">{new Date(e.starts_at).toLocaleString('en-IN')}</dd></div>
-                    </dl>
-                    <Link to={`/events/${e.id}/register`} className="btn-primary mt-5">Register</Link>
+                  <article key={e.id} className="card flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-semibold">{e.title}</h3>
+                      <p className="muted mt-2 text-sm sm:text-base">{e.description}</p>
+                      <dl className="muted mt-4 space-y-1 text-xs sm:text-sm">
+                        <div><dt className="inline font-bold">Venue: </dt><dd className="inline">{e.venue}</dd></div>
+                        <div><dt className="inline font-bold">When: </dt>
+                          <dd className="inline">{new Date(e.starts_at).toLocaleString('en-IN')}</dd></div>
+                      </dl>
+                    </div>
+                    <Link to={`/events/${e.id}/register`} className="btn-primary mt-5 self-start w-full sm:w-auto text-center justify-center">Register</Link>
                   </article>
                 ))}
               </div>

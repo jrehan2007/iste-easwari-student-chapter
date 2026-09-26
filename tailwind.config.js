@@ -4,6 +4,9 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '440px',
+      },
       colors: {
         turkish: { DEFAULT: '#00A9CE', dark: '#00758E', light: '#7FDCEF', mist: '#E8F7FB' },
         ink: '#0E1B33',

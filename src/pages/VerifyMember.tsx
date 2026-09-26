@@ -338,19 +338,19 @@ export default function VerifyMember() {
           </div>
         ) : (
           /* 8. ACTIVE & VALID STATE (The Premium Verified Card) */
-          <div className="w-full overflow-hidden rounded-2xl border-2 border-gold/70 bg-gradient-to-b from-[#181206] via-[#0E0B04] to-[#040301] shadow-[0_0_50px_rgba(201,162,39,0.25)]">
+          <div className="w-full overflow-hidden rounded-xl sm:rounded-2xl border-2 border-gold/70 bg-gradient-to-b from-[#181206] via-[#0E0B04] to-[#040301] shadow-[0_0_50px_rgba(201,162,39,0.25)]">
             {/* Gold Banner Top */}
-            <div className="relative border-b border-gold/30 bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 px-6 py-6 text-center sm:px-8">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-[#120E05] shadow-[0_0_25px_rgba(201,162,39,0.35)]">
-                <ShieldCheck className="h-9 w-9 text-gold-light" />
+            <div className="relative border-b border-gold/30 bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 px-4 py-5 text-center sm:px-8 sm:py-6">
+              <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full border-2 border-gold bg-[#120E05] shadow-[0_0_25px_rgba(201,162,39,0.35)]">
+                <ShieldCheck className="h-8 w-8 sm:h-9 sm:w-9 text-gold-light" />
               </div>
 
-              <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
+              <div className="mt-3.5 sm:mt-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-emerald-300">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>ACTIVE</span>
               </div>
 
-              <h1 className="font-display mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              <h1 className="font-display mt-2.5 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
                 ✓ VERIFIED MEMBER
               </h1>
 
@@ -358,12 +358,12 @@ export default function VerifyMember() {
                 Official Membership Verification
               </p>
 
-              <div className="mt-2 space-y-0.5 font-display text-xs uppercase tracking-[0.2em] text-gold-light/80 sm:text-sm">
+              <div className="mt-2 space-y-0.5 font-display text-[11px] sm:text-xs uppercase tracking-[0.14em] sm:tracking-[0.2em] text-gold-light/80">
                 <p>ISTE EASWARI</p>
-                <p className="text-[11px] text-white/60">EASWARI ENGINEERING COLLEGE, RAMAPURAM</p>
+                <p className="text-[10px] sm:text-[11px] text-white/60">EASWARI ENGINEERING COLLEGE, RAMAPURAM</p>
               </div>
 
-              <div className="mt-4 mx-auto max-w-md border-t border-gold/20 pt-3">
+              <div className="mt-3 sm:mt-4 mx-auto max-w-md border-t border-gold/20 pt-2.5 sm:pt-3">
                 <p className="text-xs text-white/75 leading-relaxed sm:text-sm">
                   This membership is authentic and verified by ISTE Easwari Student Chapter.
                 </p>
@@ -371,33 +371,33 @@ export default function VerifyMember() {
             </div>
 
             {/* Content Body */}
-            <div className="p-6 sm:p-8">
+            <div className="p-4 sm:p-8">
               {/* Member Identification Row */}
-              <div className="flex flex-col items-center gap-4 border-b border-gold/25 pb-6 text-center sm:flex-row sm:items-center sm:text-left">
+              <div className="flex flex-col items-center gap-3.5 sm:gap-4 border-b border-gold/25 pb-5 sm:pb-6 text-center sm:flex-row sm:items-center sm:text-left">
                 {data.photoUrl ? (
                   <img
                     src={data.photoUrl}
                     alt={data.fullName}
-                    className="h-24 w-24 rounded-lg border-2 border-gold/60 object-cover shadow-md shadow-black/60"
+                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-lg border-2 border-gold/60 object-cover shadow-md shadow-black/60 shrink-0"
                   />
                 ) : (
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg border-2 border-gold/60 bg-gold/10 font-display text-2xl font-bold text-gold-light shadow-md shadow-black/60">
+                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-lg border-2 border-gold/60 bg-gold/10 font-display text-xl sm:text-2xl font-bold text-gold-light shadow-md shadow-black/60">
                     {data.fullName?.split(' ').map((w) => w[0]).slice(0, 2).join('')}
                   </div>
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <span className="text-[11px] uppercase tracking-wider text-white/50">Member Name</span>
-                  <h2 className="font-display text-2xl font-semibold text-gold-light sm:text-3xl">
+                  <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-white/50">Member Name</span>
+                  <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-gold-light [overflow-wrap:anywhere]">
                     {data.fullName}
                   </h2>
                   {data.email && (
-                    <p className="mt-0.5 font-mono text-xs text-white/70">
+                    <p className="mt-0.5 font-mono text-xs text-white/70 [overflow-wrap:anywhere]">
                       {data.email}
                     </p>
                   )}
                   <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                    <span className="font-mono text-sm text-white/85">{data.memberId}</span>
+                    <span className="font-mono text-xs sm:text-sm text-white/85">{data.memberId}</span>
                     <button
                       onClick={() => data.memberId && handleCopy(data.memberId)}
                       className="inline-flex items-center gap-1 rounded bg-white/10 px-2 py-0.5 text-xs text-white/70 transition hover:bg-white/20 hover:text-white"
@@ -411,28 +411,28 @@ export default function VerifyMember() {
               </div>
 
               {/* Specification Grid */}
-              <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
-                <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                  <dt className="text-xs uppercase tracking-wider text-white/45">Membership Type</dt>
-                  <dd className="mt-1 font-semibold text-white">{data.membershipType || 'ISTE Student Chapter'}</dd>
+              <dl className="mt-5 sm:mt-6 grid grid-cols-1 gap-2.5 sm:gap-x-6 sm:gap-y-4 text-xs sm:text-sm sm:grid-cols-2">
+                <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                  <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Membership Type</dt>
+                  <dd className="mt-0.5 sm:mt-1 font-semibold text-white">{data.membershipType || 'ISTE Student Chapter'}</dd>
                 </div>
 
-                <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                  <dt className="text-xs uppercase tracking-wider text-white/45">Institution</dt>
-                  <dd className="mt-1 font-semibold text-white">{data.institution || 'Easwari Engineering College, Ramapuram'}</dd>
+                <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                  <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Institution</dt>
+                  <dd className="mt-0.5 sm:mt-1 font-semibold text-white">{data.institution || 'Easwari Engineering College, Ramapuram'}</dd>
                 </div>
 
                 {data.regNo && (
-                  <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                    <dt className="text-xs uppercase tracking-wider text-white/45">Register Number</dt>
-                    <dd className="mt-1 font-mono text-white/90">{data.regNo}</dd>
+                  <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                    <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Register Number</dt>
+                    <dd className="mt-0.5 sm:mt-1 font-mono text-white/90">{data.regNo}</dd>
                   </div>
                 )}
 
                 {data.department && (
-                  <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                    <dt className="text-xs uppercase tracking-wider text-white/45">Department</dt>
-                    <dd className="mt-1 text-white/90">
+                  <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                    <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Department</dt>
+                    <dd className="mt-0.5 sm:mt-1 text-white/90">
                       {[data.department, data.year ? `Year ${data.year}` : '', data.section ? `Sec ${data.section}` : '']
                         .filter(Boolean)
                         .join(' · ')}
@@ -440,37 +440,37 @@ export default function VerifyMember() {
                   </div>
                 )}
 
-                <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                  <dt className="text-xs uppercase tracking-wider text-white/45">Valid From</dt>
-                  <dd className="mt-1 text-white/80">{formatDate(data.validFrom)}</dd>
+                <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                  <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Valid From</dt>
+                  <dd className="mt-0.5 sm:mt-1 text-white/80">{formatDate(data.validFrom)}</dd>
                 </div>
 
-                <div className="rounded-lg border border-gold/15 bg-black/40 p-3.5">
-                  <dt className="text-xs uppercase tracking-wider text-white/45">Valid Until</dt>
-                  <dd className="mt-1 font-semibold text-gold-light">{formatDate(data.validTill)}</dd>
+                <div className="rounded-lg border border-gold/15 bg-black/40 p-3 sm:p-3.5">
+                  <dt className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Valid Until</dt>
+                  <dd className="mt-0.5 sm:mt-1 font-semibold text-gold-light">{formatDate(data.validTill)}</dd>
                 </div>
               </dl>
 
               {/* Official Seal Guarantee */}
-              <div className="mt-8 flex items-center justify-between rounded-xl border border-gold/30 bg-gold/5 p-4">
+              <div className="mt-6 sm:mt-8 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 rounded-xl border border-gold/30 bg-gold/5 p-3.5 sm:p-4">
                 <div className="flex items-center gap-3">
-                  <IsteMark className="h-10 w-10 shrink-0" />
+                  <IsteMark className="h-9 w-9 sm:h-10 sm:w-10 shrink-0" />
                   <div>
-                    <p className="font-display text-sm font-semibold text-gold-light">Verified Member</p>
-                    <p className="text-xs text-white/60">✓ Official ISTE Membership</p>
+                    <p className="font-display text-xs sm:text-sm font-semibold text-gold-light">Verified Member</p>
+                    <p className="text-[11px] sm:text-xs text-white/60">✓ Official ISTE Membership</p>
                   </div>
                 </div>
-                <div className="text-right text-[11px] text-white/40">
+                <div className="text-left xs:text-right text-[10px] sm:text-[11px] text-white/40">
                   <p>Certified by</p>
                   <p className="font-medium text-white/70">ISTE Easwari Chapter</p>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 sm:mt-8 flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => setShowSearchModal(true)}
-                  className="inline-flex w-full flex-1 items-center justify-center gap-2 rounded-sm border border-gold bg-gold px-5 py-3 text-sm font-semibold text-black transition hover:bg-gold-light"
+                  className="inline-flex min-h-[44px] w-full flex-1 items-center justify-center gap-2 rounded-sm border border-gold bg-gold px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-gold-light"
                 >
                   <Search size={16} />
                   <span>VERIFY ANOTHER MEMBERSHIP</span>
@@ -478,7 +478,7 @@ export default function VerifyMember() {
               </div>
 
               {/* Audit Meta */}
-              <div className="mt-6 border-t border-white/10 pt-4 text-center text-[11px] text-white/40">
+              <div className="mt-5 sm:mt-6 border-t border-white/10 pt-3.5 sm:pt-4 text-center text-[10px] sm:text-[11px] text-white/40">
                 <p>Verified on: {data.verifiedAt}</p>
                 <p className="mt-0.5 font-mono">Verification ID: {data.verificationId}</p>
               </div>

@@ -581,6 +581,16 @@ html:not(.dark) .header-chapter-title-fill { filter: none; }
   .priority-carousel-hint { letter-spacing: 0.08em; }
 }
 
+@media (max-width: 360px) {
+  .priority-carousel-track { height: 295px; }
+  .priority-event-card { width: min(250px, 76vw); }
+  .priority-event-card-inner { min-height: 265px; padding: 14px 12px 12px; }
+  .priority-event-title { font-size: 1.3rem; margin-top: 14px; }
+  .priority-event-meta { margin-top: 14px; gap: 8px; }
+  .priority-event-detail { font-size: 0.78rem; }
+  .priority-register-button { margin-top: 14px; padding: 8px 12px; font-size: 0.75rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .priority-carousel,
   .priority-event-card,
@@ -764,6 +774,16 @@ html:not(.dark) .header-chapter-title-fill { filter: none; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 360px) {
+  .event-deck-shell { min-height: 410px; }
+  .event-deck-stack { height: 390px; }
+  .event-deck-card { width: min(270px, 88vw); }
+  .event-card-inner { min-height: 330px; }
+  .event-card-banner { height: 110px; }
+  .event-card-body, .event-card-back-inner { padding: 0.75rem; }
+  .event-card-title { font-size: 1.35rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

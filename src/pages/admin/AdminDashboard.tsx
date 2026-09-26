@@ -42,10 +42,10 @@ export default function AdminDashboard() {
         <div className="rule mt-5" />
 
         <div className="mt-6 grid min-w-0 gap-8 lg:grid-cols-[210px_minmax(0,1fr)]">
-          <nav className="dash w-full min-w-0 max-w-full flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+          <nav className="dash flex w-full min-w-0 max-w-full gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
             {sections.map((s) => (
               <button key={s.id} onClick={() => setTab(s.id)}
-                className={`dash-nav ${tab === s.id
+                className={`dash-nav shrink-0 ${tab === s.id
                   ? 'bg-turkish text-white'
                   : 'text-ink/75 hover:bg-turkish-mist dark:text-slate-300 dark:hover:bg-night-soft'}`}>
                 <s.icon size={17} /> {s.label}

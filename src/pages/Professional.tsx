@@ -240,11 +240,11 @@ export default function Professional() {
       </div>
 
       {/* 2. Centered Executive Council */}
-      <div className="mt-10 flex flex-col items-center text-center">
+      <div className="mt-8 sm:mt-10 flex flex-col items-center text-center">
         <div className="relative flex w-full max-w-2xl items-center justify-center">
           <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent to-turkish/40 sm:block" />
-          <div className="mx-3 rounded-lg border border-gold/30 bg-white/70 px-8 py-5 shadow-sm dark:border-gold/25 dark:bg-night-soft">
-            <h2 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl dark:text-slate-100">
+          <div className="mx-2 sm:mx-3 rounded-lg border border-gold/30 bg-white/70 px-4 py-3.5 sm:px-8 sm:py-5 shadow-sm dark:border-gold/25 dark:bg-night-soft">
+            <h2 className="font-display text-xl font-bold tracking-tight text-ink sm:text-2xl md:text-3xl dark:text-slate-100">
               ISTE Executive Council
             </h2>
             <p className="muted mt-1 text-xs sm:text-sm">
@@ -259,8 +259,8 @@ export default function Professional() {
         </div>
 
         {/* Vertical connector to Club Leadership */}
-        <div className="my-3 flex flex-col items-center">
-          <div className="h-5 w-px bg-gold/50" />
+        <div className="my-2.5 sm:my-3 flex flex-col items-center">
+          <div className="h-4 sm:h-5 w-px bg-gold/50" />
           <div className="h-1.5 w-1.5 rounded-full bg-gold" />
         </div>
       </div>
@@ -268,22 +268,22 @@ export default function Professional() {
       {/* 3. Level 1: Primary Club Leadership (President, Secretary, Treasurer) */}
       {primaryLeaders.length > 0 && (
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-gold-deep dark:text-gold-light">
+          <div className="mb-3 sm:mb-4 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 sm:px-4 py-1 text-xs font-bold uppercase tracking-widest text-gold-deep dark:text-gold-light">
             Club Leadership
           </div>
 
-          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-5">
+          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-3 sm:gap-5">
             {primaryLeaders.map((m) => (
               <article
                 key={m.id}
-                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-4 rounded-sm border-l-2 border-gold border-y border-r border-gold/30 bg-white/70 p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
+                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-3 sm:gap-4 rounded-sm border-l-2 border-gold border-y border-r border-gold/30 bg-white/70 p-3 sm:p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
               >
-                <Portrait person={m} size="h-20 w-20 shrink-0" />
+                <Portrait person={m} size="h-16 w-16 sm:h-20 sm:w-20 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold uppercase tracking-wider text-gold-deep dark:text-gold-light">
                     {m.role || 'Executive Leader'}
                   </p>
-                  <h4 className="font-display mt-0.5 text-base font-bold text-ink sm:text-lg dark:text-slate-100">
+                  <h4 className="font-display mt-0.5 text-sm sm:text-base font-bold text-ink dark:text-slate-100">
                     {m.name}
                   </h4>
                   <p className="muted text-xs">
@@ -311,27 +311,27 @@ export default function Professional() {
       {secondaryLeaders.length > 0 && (
         <div className="flex flex-col items-center text-center">
           {/* Subtle hierarchy connector from Primary to Secondary */}
-          <div className="my-4 flex flex-col items-center">
-            <div className="h-5 w-px bg-turkish/40" />
+          <div className="my-3 sm:my-4 flex flex-col items-center">
+            <div className="h-4 sm:h-5 w-px bg-turkish/40" />
             <div className="h-1.5 w-1.5 rounded-full bg-turkish" />
           </div>
 
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-turkish/40 bg-turkish/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-turkish-dark dark:text-turkish-light">
+          <div className="mb-3 sm:mb-4 inline-flex items-center gap-1.5 rounded-full border border-turkish/40 bg-turkish/10 px-3 sm:px-4 py-1 text-xs font-bold uppercase tracking-widest text-turkish-dark dark:text-turkish-light">
             Secondary Leadership
           </div>
 
-          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-5">
+          <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-3 sm:gap-5">
             {secondaryLeaders.map((m) => (
               <article
                 key={m.id}
-                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-4 rounded-sm border-l-2 border-turkish border-y border-r border-turkish/20 bg-turkish-mist/40 p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
+                className="flex w-full max-w-sm sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] items-center gap-3 sm:gap-4 rounded-sm border-l-2 border-turkish border-y border-r border-turkish/20 bg-turkish-mist/40 p-3 sm:p-4 text-left shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft"
               >
-                <Portrait person={m} size="h-20 w-20 shrink-0" />
+                <Portrait person={m} size="h-16 w-16 sm:h-20 sm:w-20 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
                     {m.role || 'Secondary Leader'}
                   </p>
-                  <h4 className="font-display mt-0.5 text-base font-bold text-ink sm:text-lg dark:text-slate-100">
+                  <h4 className="font-display mt-0.5 text-sm sm:text-base font-bold text-ink dark:text-slate-100">
                     {m.name}
                   </h4>
                   <p className="muted text-xs">
@@ -357,18 +357,18 @@ export default function Professional() {
 
       {/* Subtle connector to functional teams */}
       {(primaryLeaders.length > 0 || secondaryLeaders.length > 0) && (
-        <div className="my-6 flex flex-col items-center">
-          <div className="h-6 w-px bg-turkish/30" />
+        <div className="my-5 sm:my-6 flex flex-col items-center">
+          <div className="h-5 sm:h-6 w-px bg-turkish/30" />
           <div className="h-1.5 w-1.5 rounded-full bg-turkish/60" />
         </div>
       )}
 
       {/* 5. Two-Column Layout: Teams & Domains (Left) + Selected Team Members (Right) */}
-      <div className="mt-2 grid gap-8 lg:grid-cols-[320px_1fr]">
+      <div className="mt-2 grid gap-6 sm:gap-8 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr]">
         {/* LEFT COLUMN: TEAMS & DOMAINS */}
         <aside>
-          <div className="rounded-sm border border-turkish/20 bg-white/40 p-3.5 shadow-sm dark:border-night-line dark:bg-night/70">
-            <div className="mb-3 flex items-center justify-between border-b border-turkish/20 pb-2.5 dark:border-night-line">
+          <div className="rounded-sm border border-turkish/20 bg-white/40 p-3 sm:p-3.5 shadow-sm dark:border-night-line dark:bg-night/70">
+            <div className="mb-2.5 sm:mb-3 flex items-center justify-between border-b border-turkish/20 pb-2.5 dark:border-night-line">
               <h3 className="font-display text-xs font-bold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
                 Teams &amp; Domains
               </h3>
@@ -377,7 +377,7 @@ export default function Professional() {
               </span>
             </div>
 
-            <nav className="flex max-h-[620px] flex-col gap-1.5 overflow-y-auto pr-1">
+            <nav className="flex max-h-[300px] lg:max-h-[620px] flex-col gap-1.5 overflow-y-auto pr-1">
               {functionalDomains.map((d) => {
                 const isSelected = d.id === (current?.id ?? active)
                 const count = all.filter((m) => m.domain_id === d.id && !allLeadershipMemberIds.has(m.id)).length
@@ -386,7 +386,7 @@ export default function Professional() {
                   <button
                     key={d.id}
                     onClick={() => setActive(d.id)}
-                    className={`group relative flex w-full items-center justify-between rounded-sm border px-3.5 py-3 text-left transition ${
+                    className={`group relative flex w-full items-center justify-between rounded-sm border px-3 py-2.5 sm:px-3.5 sm:py-3 text-left transition ${
                       isSelected
                         ? 'border-l-4 border-turkish border-y-turkish/20 border-r-turkish/20 bg-turkish-mist shadow-sm dark:border-y-night-line dark:border-r-night-line dark:bg-night-soft'
                         : 'border-transparent hover:border-turkish/30 hover:bg-turkish-mist/40 dark:hover:bg-night-soft/60'
@@ -394,7 +394,7 @@ export default function Professional() {
                   >
                     <div className="min-w-0 pr-2">
                       <span
-                        className={`font-display block text-sm font-semibold leading-snug tracking-wide uppercase transition ${
+                        className={`font-display block text-xs sm:text-sm font-semibold leading-snug tracking-wide uppercase transition ${
                           isSelected
                             ? 'font-bold text-turkish-dark dark:text-turkish-light'
                             : 'text-ink dark:text-slate-200 group-hover:text-turkish-dark dark:group-hover:text-turkish-light'
@@ -436,37 +436,37 @@ export default function Professional() {
               {/* Selected Team Header */}
               <div className="flex flex-col justify-between gap-2 border-b-2 border-turkish/40 pb-4 sm:flex-row sm:items-end">
                 <div>
-                  <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-ink sm:text-3xl dark:text-slate-100">
+                  <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold uppercase tracking-tight text-ink dark:text-slate-100">
                     {current?.name}
                   </h3>
                   {current?.tagline && (
-                    <p className="mt-1 text-sm font-medium text-turkish-dark dark:text-turkish-light">
+                    <p className="mt-1 text-xs sm:text-sm font-medium text-turkish-dark dark:text-turkish-light">
                       {current.tagline}
                     </p>
                   )}
                 </div>
 
-                <span className="inline-flex shrink-0 items-center self-start rounded-sm border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gold-deep sm:self-auto dark:text-gold-light">
+                <span className="inline-flex shrink-0 items-center self-start rounded-sm border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-gold-deep sm:self-auto dark:text-gold-light">
                   {teamMembers.length} {teamMembers.length === 1 ? 'Member' : 'Members'}
                 </span>
               </div>
 
               {current?.description && (
-                <p className="muted mt-3 max-w-3xl text-sm leading-relaxed">
+                <p className="muted mt-3 max-w-3xl text-xs sm:text-sm leading-relaxed">
                   {current.description}
                 </p>
               )}
 
               {/* Members Display */}
               {!teamMembers.length ? (
-                <div className="mt-8 rounded-sm border border-turkish/15 bg-white/50 p-8 text-center dark:border-night-line dark:bg-night-soft/40">
-                  <h4 className="font-display text-xl font-bold uppercase tracking-wide text-ink dark:text-slate-100">
+                <div className="mt-6 sm:mt-8 rounded-sm border border-turkish/15 bg-white/50 p-6 sm:p-8 text-center dark:border-night-line dark:bg-night-soft/40">
+                  <h4 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-ink dark:text-slate-100">
                     {current?.name}
                   </h4>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-turkish-dark dark:text-turkish-light">
                     0 Members
                   </p>
-                  <p className="muted mt-3 text-sm">
+                  <p className="muted mt-3 text-xs sm:text-sm">
                     No members are currently assigned to this team.
                   </p>
                 </div>
@@ -474,25 +474,27 @@ export default function Professional() {
                 <div className="mt-6 space-y-6">
                   {/* Domain Head (if present) */}
                   {head && (
-                    <article className="grid gap-6 border-l-2 border-turkish bg-turkish-mist/40 p-6 sm:grid-cols-[150px_1fr] dark:bg-night-soft">
-                      <Portrait person={head} size="h-[150px] w-[150px]" zoom={1.45} />
-                      <div>
-                        <p className="text-sm uppercase tracking-[0.14em] text-turkish-dark dark:text-turkish-light">
+                    <article className="grid gap-4 sm:gap-6 border-l-2 border-turkish bg-turkish-mist/40 p-4 sm:p-6 sm:grid-cols-[140px_1fr] dark:bg-night-soft">
+                      <div className="flex justify-center sm:block">
+                        <Portrait person={head} size="h-28 w-28 sm:h-[140px] sm:w-[140px] shrink-0" zoom={1.45} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm uppercase tracking-[0.14em] text-turkish-dark dark:text-turkish-light font-medium">
                           {head.role ?? `${current?.name} Head`}
                         </p>
-                        <h4 className="font-display mt-1 text-2xl font-semibold">{head.name}</h4>
-                        <p className="muted mt-0.5 text-sm">
+                        <h4 className="font-display mt-1 text-xl sm:text-2xl font-semibold">{head.name}</h4>
+                        <p className="muted mt-0.5 text-xs sm:text-sm">
                           {[head.year, head.department].filter(Boolean).join(' · ')}
                         </p>
-                        {head.bio && <p className="mt-3 text-sm leading-relaxed">{head.bio}</p>}
+                        {head.bio && <p className="mt-2.5 text-xs sm:text-sm leading-relaxed">{head.bio}</p>}
                         {head.linkedin_url && (
                           <a
                             href={head.linkedin_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-3 inline-flex items-center gap-2 text-sm text-turkish-dark hover:underline dark:text-turkish-light"
+                            className="mt-3 inline-flex items-center gap-1.5 text-xs sm:text-sm text-turkish-dark hover:underline dark:text-turkish-light"
                           >
-                            <Linkedin size={16} /> LinkedIn
+                            <Linkedin size={15} /> LinkedIn
                           </a>
                         )}
                       </div>
@@ -504,29 +506,29 @@ export default function Professional() {
                     <div>
                       {head && (
                         <div className="mb-4">
-                          <h4 className="font-display text-lg font-semibold tracking-wide text-ink dark:text-slate-200">
+                          <h4 className="font-display text-base sm:text-lg font-semibold tracking-wide text-ink dark:text-slate-200">
                             The {current?.name} Team
                           </h4>
                           <div className="rule mt-2" />
                         </div>
                       )}
 
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                         {rest.map((m) => (
                           <article
                             key={m.id}
-                            className="group flex gap-4 rounded-sm border border-turkish/15 bg-white/40 p-4 dark:border-night-line dark:bg-night-soft/50"
+                            className="group flex gap-3 sm:gap-4 rounded-sm border border-turkish/15 bg-white/40 p-3 sm:p-4 dark:border-night-line dark:bg-night-soft/50"
                           >
-                            <Portrait person={m} size="h-20 w-20 shrink-0" />
+                            <Portrait person={m} size="h-16 w-16 sm:h-20 sm:w-20 shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <h5 className="font-display text-lg font-semibold leading-tight">{m.name}</h5>
+                              <h5 className="font-display text-base sm:text-lg font-semibold leading-tight">{m.name}</h5>
                               {m.role && (
-                                <p className="text-sm text-turkish-dark dark:text-turkish-light">{m.role}</p>
+                                <p className="text-xs sm:text-sm text-turkish-dark dark:text-turkish-light">{m.role}</p>
                               )}
                               <p className="muted text-xs">
                                 {[m.year, m.department].filter(Boolean).join(' · ')}
                               </p>
-                              {m.bio && <p className="muted mt-1.5 text-sm leading-relaxed line-clamp-2">{m.bio}</p>}
+                              {m.bio && <p className="muted mt-1.5 text-xs sm:text-sm leading-relaxed line-clamp-2">{m.bio}</p>}
                               {m.linkedin_url && (
                                 <a
                                   href={m.linkedin_url}
@@ -534,7 +536,7 @@ export default function Professional() {
                                   rel="noreferrer"
                                   className="mt-2 inline-flex items-center gap-1.5 text-xs text-turkish-dark hover:underline dark:text-turkish-light"
                                 >
-                                  <Linkedin size={14} /> LinkedIn
+                                  <Linkedin size={13} /> LinkedIn
                                 </a>
                               )}
                             </div>
