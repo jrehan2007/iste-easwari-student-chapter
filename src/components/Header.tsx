@@ -89,9 +89,9 @@ export default function Header() {
       <div className="w-full px-3.5 sm:px-6 lg:px-10 flex h-16 sm:h-24 lg:h-[108px] items-center justify-between gap-2 sm:gap-4">
         {/* Left: Dual Logos (Easwari then circular ISTE logo) */}
         <div className="flex shrink-0 items-center">
-          <Link to="/" className="flex items-center gap-2 sm:gap-4" onClick={() => setOpen(false)} aria-label="ISTE Easwari Home">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-4" onClick={() => setOpen(false)} aria-label="ISTE Easwari Home">
             <EaswariMark className="h-7 sm:h-10 lg:h-11 xl:h-12 w-auto shrink-0" tone="onDark" />
-            <IsteMark className="h-9 w-9 sm:h-12 sm:w-12 lg:h-[58px] lg:w-[58px] xl:h-[64px] xl:w-[64px] shrink-0" />
+            <IsteMark className="h-[48px] w-[48px] sm:h-[50px] sm:w-[50px] lg:h-[60px] lg:w-[60px] xl:h-[64px] xl:w-[64px] shrink-0" />
           </Link>
         </div>
 

@@ -76,7 +76,7 @@ export default function Login() {
         className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-3.5 py-8 text-white sm:px-6 md:px-8 sm:py-10"
       >
         <img
-          src="/iste-logo.png"
+          src="/assets/iste-logo.png"
           alt=""
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(760px,125vw)] max-w-none -translate-x-1/2 -translate-y-1/2 select-none opacity-[0.06]"
@@ -112,7 +112,7 @@ export default function Login() {
       className="relative isolate flex min-h-screen cursor-pointer items-center justify-center overflow-hidden bg-[#0A1220] px-3.5 py-8 text-white sm:px-6 md:px-8 sm:py-10"
     >
       <img
-        src="/iste-logo.png"
+        src="/assets/iste-logo.png"
         alt=""
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(760px,125vw)] max-w-none -translate-x-1/2 -translate-y-1/2 select-none opacity-[0.06]"

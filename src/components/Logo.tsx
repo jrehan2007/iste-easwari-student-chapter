@@ -28,7 +28,7 @@ export function IsteMark({
     setTilt({ x: 0, y: 0, light: 50 })
   }
 
-  const logo = <img src="/iste-logo.png" alt="ISTE" className="relative h-full w-full rounded-full object-cover" />
+  const logo = <img src="/assets/iste-logo.png" alt="ISTE Easwari Student Chapter" className="relative h-full w-full rounded-full object-contain" />
 
   return (
     <div

@@ -28,7 +28,7 @@ main.page-watermark::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: url('/iste-logo.png');
+  background-image: url('/assets/iste-logo.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: min(500px, 80vw);

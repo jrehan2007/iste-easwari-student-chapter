@@ -217,7 +217,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
       <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:22px">
         <div style="display:flex;align-items:center;gap:16px;min-width:0">
           <span style="display:inline-flex;background:#fff;padding:8px 12px;border-radius:2px"><img src="/easwari-logo.webp" alt="Easwari Engineering College" style="display:block;width:176px;height:38px;object-fit:contain"></span>
-          <img src="/iste-logo.png" alt="ISTE" style="display:block;width:76px;height:76px;border-radius:50%;object-fit:cover">
+          <img src="/assets/iste-logo.png" alt="ISTE" style="display:block;width:76px;height:76px;border-radius:50%;object-fit:cover">
           <div style="min-width:0;line-height:1.25"><div style="font-size:24px;font-weight:600;letter-spacing:2px;color:#E8CE72;white-space:nowrap">ISTE STUDENT CHAPTER</div><div style="margin-top:5px;font-family:Arial,sans-serif;font-size:16px;letter-spacing:.7px;color:rgba(255,255,255,.72);white-space:nowrap">EASWARI ENGINEERING COLLEGE · RAMAPURAM</div></div>
         </div>
         <div style="color:#E8CE72;font-family:Arial,sans-serif;font-size:28px">✓</div>
@@ -243,7 +243,7 @@ function MemberCard({ member, email }: { member: MemberRecord; email: string }) 
       <div style="position:absolute;inset:28px;border:1px solid rgba(201,162,39,.2);pointer-events:none"></div>
       <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 8%,rgba(201,162,39,.2),transparent 46%);pointer-events:none"></div>
       <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center">
-        <div><img src="/iste-logo.png" alt="ISTE" style="display:block;width:92px;height:92px;border-radius:50%;object-fit:cover;margin:0 auto"><div style="margin-top:14px;font-size:25px;line-height:1.2;letter-spacing:5px;color:#E8CE72;white-space:nowrap">ISTE STUDENT CHAPTER</div><div style="margin-top:8px;font-family:Arial,sans-serif;font-size:17px;letter-spacing:1px;color:rgba(255,255,255,.68);white-space:nowrap">EASWARI ENGINEERING COLLEGE · RAMAPURAM</div></div>
+        <div><img src="/assets/iste-logo.png" alt="ISTE" style="display:block;width:92px;height:92px;border-radius:50%;object-fit:cover;margin:0 auto"><div style="margin-top:14px;font-size:25px;line-height:1.2;letter-spacing:5px;color:#E8CE72;white-space:nowrap">ISTE STUDENT CHAPTER</div><div style="margin-top:8px;font-family:Arial,sans-serif;font-size:17px;letter-spacing:1px;color:rgba(255,255,255,.68);white-space:nowrap">EASWARI ENGINEERING COLLEGE · RAMAPURAM</div></div>
         <div><div style="display:inline-block;background:#F4E4BC;border:6px solid #C9A227;padding:14px;box-shadow:0 0 30px rgba(201,162,39,.22)"><canvas data-export-qr="true" aria-label="Membership verification QR code" style="display:block;width:220px;height:220px"></canvas></div><div style="margin-top:12px;font-family:Arial,sans-serif;font-size:15px;letter-spacing:2px;color:rgba(255,255,255,.7);white-space:nowrap">SCAN TO VERIFY MEMBERSHIP</div></div>
         <div style="width:100%;border-top:1px solid rgba(201,162,39,.45);padding-top:12px;font-family:Arial,sans-serif;font-size:15px;letter-spacing:2px;color:rgba(255,255,255,.55)">MEMBER ID <span style="color:#E8CE72">${text(member.member_code)}</span></div>
       </div>
