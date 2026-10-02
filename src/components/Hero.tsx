@@ -103,7 +103,7 @@ export default function Hero() {
             workshops, industry sessions and a community that continues beyond the certificate.
           </p>
           <p className="mt-2.5 text-[11px] font-semibold tracking-[0.08em] text-gold-deep dark:text-gold-light xs:text-xs sm:mt-3 sm:text-sm sm:tracking-[0.16em]">
-            INNOVATION · TECHNICAL EXCELLENCE · ENDLESS POSSIBILITIES
+            UNITE · LEAD · EXCEL
           </p>
           <div className="mt-5 flex w-full flex-col gap-3 xs:w-auto xs:flex-row sm:mt-8">
             <Link to="/events" className="btn-primary hero-interactive w-full text-center xs:w-auto">See upcoming events</Link>
